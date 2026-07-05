@@ -33,6 +33,11 @@ const CONTENT_DIR = join(process.cwd(), "content");
 // Never render editorial HTML comments (TODO notes to Skyler) on the site.
 const stripComments = (s: string) => s.replace(/<!--[\s\S]*?-->/g, "").trim();
 
+// YAML parses bare dates as UTC Date objects; keep the literal yyyy-mm-dd
+// (toISOString stays in UTC — no local-timezone day shift).
+const isoDate = (d: unknown) =>
+  d instanceof Date ? d.toISOString().slice(0, 10) : String(d);
+
 function readPublicFiles(dir: string) {
   return readdirSync(dir)
     .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
@@ -47,7 +52,7 @@ export function getJournals(): JournalEntry[] {
   return readPublicFiles(join(CONTENT_DIR, "journals"))
     .map(({ slug, data, body }) => ({
       slug,
-      date: String(data.date),
+      date: isoDate(data.date),
       title: String(data.title),
       place: String(data.place),
       tags: (data.tags ?? []) as string[],
@@ -66,7 +71,7 @@ export function getEssays(): Essay[] {
   return readPublicFiles(join(CONTENT_DIR, "essays"))
     .map(({ slug, data, body }) => ({
       slug,
-      date: String(data.date),
+      date: isoDate(data.date),
       title: String(data.title),
       hook: String(data.hook ?? ""),
       tags: (data.tags ?? []) as string[],
