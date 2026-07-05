@@ -68,10 +68,10 @@ export function DeskObject({
       )}
       {lit && (
         <motion.span
-          className="caption pointer-events-none absolute z-10 hidden text-center md:block"
+          className="caption pointer-events-none absolute z-30 hidden text-center md:block"
           style={{
-            left: `${(hit.x + hit.w / 2) * 100}%`,
-            top: `${(hit.y + hit.h) * 100 + 1.5}%`,
+            left: `${def.caption.x * 100}%`,
+            top: `${def.caption.y * 100}%`,
             transform: "translateX(-50%)",
           }}
           initial={{ opacity: 0 }}

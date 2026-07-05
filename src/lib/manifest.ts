@@ -10,6 +10,8 @@ export type DeskObjectDef = {
   asset: string;
   depth: number;
   hit: HitArea;
+  /** caption anchor: center-x / top-y, fractions of the canvas, placed clear of every object */
+  caption: { x: number; y: number };
 };
 
 export type DeskManifest = {

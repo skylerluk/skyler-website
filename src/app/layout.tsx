@@ -14,6 +14,7 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://skylerluk.com"),
   title: "Skyler Luk",
   description:
     "A candlelit desk you light and explore — writing, builds, work, video, self. A record of a life.",

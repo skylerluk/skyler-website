@@ -64,13 +64,12 @@ export function DeskScene() {
     >
       {/* desk canvas: 16:10, covers the viewport; anchored left on mobile so the candle stays in frame */}
       <div
-        className={`absolute top-1/2 h-full -translate-y-1/2 md:left-1/2 md:-translate-x-1/2 ${
+        className={`absolute left-0 top-1/2 h-full -translate-y-1/2 md:left-1/2 md:-translate-x-1/2 ${
           lit ? "max-md:hidden" : ""
         }`}
         style={{
           width: "max(100vw, 160dvh)",
           aspectRatio: "1.6",
-          left: 0,
         }}
       >
         {/* baked, lit base render */}
@@ -122,14 +121,15 @@ export function DeskScene() {
             background: `radial-gradient(circle at ${flame.x * 100}% ${flame.y * 100}%, rgba(13,8,5,0.62) 0%, rgba(13,8,5,0.94) 26%, rgba(13,8,5,0.985) 65%)`,
           }}
           initial={false}
-          animate={{ opacity: lit ? 0 : 1 }}
+          // never fully lifted: a candlelit room stays moody at the edges
+          animate={{ opacity: lit ? 0.36 : 1 }}
           transition={{ duration: dur, ease: "easeOut" }}
         />
         {/* permanent warm vignette so edges fall away gently */}
         <div
           className="pointer-events-none absolute inset-0 z-10"
           style={{
-            background: `radial-gradient(ellipse at ${flame.x * 100 + 18}% ${flame.y * 100 + 22}%, rgba(20,10,4,0) 38%, rgba(16,9,4,0.5) 100%)`,
+            background: `radial-gradient(ellipse at ${flame.x * 100 + 18}% ${flame.y * 100 + 22}%, rgba(20,10,4,0) 34%, rgba(16,9,4,0.68) 100%)`,
           }}
         />
 
