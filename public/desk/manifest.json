@@ -1,0 +1,97 @@
+{
+  "canvas": {
+    "w": 2400,
+    "h": 1500
+  },
+  "art": "placeholder-v1 (programmatic). Swap: replace /public/desk assets, keep filenames + this manifest shape.",
+  "objects": [
+    {
+      "id": "candle",
+      "label": "light",
+      "section": null,
+      "route": null,
+      "asset": "obj-candle.png",
+      "depth": 0.5,
+      "hit": {
+        "x": 0.075,
+        "y": 0.14,
+        "w": 0.135,
+        "h": 0.31
+      }
+    },
+    {
+      "id": "notebook",
+      "label": "Writings",
+      "section": "writings",
+      "route": "/writings",
+      "asset": "obj-notebook.png",
+      "depth": 0.8,
+      "hit": {
+        "x": 0.135,
+        "y": 0.41,
+        "w": 0.175,
+        "h": 0.36
+      }
+    },
+    {
+      "id": "laptop",
+      "label": "Technical Builds",
+      "section": "builds",
+      "route": "/builds",
+      "asset": "obj-laptop.png",
+      "depth": 1,
+      "hit": {
+        "x": 0.36,
+        "y": 0.3,
+        "w": 0.3,
+        "h": 0.42
+      }
+    },
+    {
+      "id": "folder",
+      "label": "Work & Ventures",
+      "section": "work",
+      "route": "/work",
+      "asset": "obj-folder.png",
+      "depth": 1.1,
+      "hit": {
+        "x": 0.45,
+        "y": 0.72,
+        "w": 0.27,
+        "h": 0.26
+      }
+    },
+    {
+      "id": "postit-about",
+      "label": "About Me",
+      "section": "about",
+      "route": "/about",
+      "asset": "obj-postit-about.png",
+      "depth": 0.6,
+      "hit": {
+        "x": 0.8,
+        "y": 0.13,
+        "w": 0.115,
+        "h": 0.19
+      }
+    },
+    {
+      "id": "phone",
+      "label": "Video",
+      "section": "video",
+      "route": "/video",
+      "asset": "obj-phone.png",
+      "depth": 0.9,
+      "hit": {
+        "x": 0.735,
+        "y": 0.52,
+        "w": 0.115,
+        "h": 0.33
+      }
+    }
+  ],
+  "flame": {
+    "x": 0.146,
+    "y": 0.19
+  }
+}
