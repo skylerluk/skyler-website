@@ -11,7 +11,8 @@ HARD_RULES="Enterprise Strategy Solutions|stealth rebrand|X Consulting|non-compe
 
 FAIL=0
 for pattern in "$EXCLUDE" "$HARD_RULES"; do
-  HITS=$(grep -riE "$pattern" .next/server/app .next/static out dist build 2>/dev/null | grep -v '\.map:' || true)
+  # -I skips binaries (favicon bytes), -w word-boundaries (minified JS substrings)
+  HITS=$(grep -rIiwE "$pattern" .next/server/app .next/static out dist build 2>/dev/null | grep -v '\.map:' || true)
   if [ -n "$HITS" ]; then
     echo "PRIVACY FAIL — pattern: $pattern"
     echo "$HITS" | head -20

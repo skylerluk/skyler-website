@@ -1,26 +1,124 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --cream: #f3e9d8;
+  --amber: #ff9e4b;
+  --glow: #ffcb78;
+  --ink: #3b2f2a;
+  --night: #0d0805;
+  --wood: #8f6238;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-cream: var(--cream);
+  --color-amber: var(--amber);
+  --color-glow: var(--glow);
+  --color-ink: var(--ink);
+  --color-night: var(--night);
+  --color-wood: var(--wood);
+  --font-serif: var(--font-fraunces);
+  --font-sans: var(--font-figtree);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--night);
+  color: var(--cream);
+  font-family: var(--font-figtree), system-ui, sans-serif;
+}
+
+/* ---- flame ---- */
+.flame {
+  position: absolute;
+  width: 26px;
+  height: 44px;
+  transform: translate(-50%, -100%);
+  border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  background: radial-gradient(
+    ellipse at 50% 78%,
+    #fff7e0 0%,
+    var(--glow) 38%,
+    var(--amber) 68%,
+    rgba(255, 122, 40, 0) 100%
+  );
+  filter: blur(0.6px) drop-shadow(0 0 18px rgba(255, 158, 75, 0.75));
+  transform-origin: 50% 100%;
+  animation: flicker 2.8s ease-in-out infinite;
+}
+.flame::after {
+  content: "";
+  position: absolute;
+  inset: 42% 30% 8% 30%;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 80%, #fffdf5 0%, rgba(255, 247, 224, 0) 75%);
+}
+@keyframes flicker {
+  0%, 100% { transform: translate(-50%, -100%) scale(1) rotate(-1deg); opacity: 1; }
+  22% { transform: translate(-50%, -100%) scale(1.06, 0.97) rotate(1.4deg); opacity: 0.94; }
+  46% { transform: translate(-50%, -100%) scale(0.95, 1.05) rotate(-2deg); opacity: 0.97; }
+  70% { transform: translate(-50%, -100%) scale(1.04, 0.99) rotate(1deg); opacity: 0.92; }
+}
+
+/* ember wick, pre-light */
+.ember {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  transform: translate(-50%, -100%);
+  background: radial-gradient(circle, #ffb066 0%, #7a3d14 60%, rgba(0, 0, 0, 0) 100%);
+  animation: emberpulse 3.2s ease-in-out infinite;
+}
+@keyframes emberpulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* glow pulse behind the flame */
+.glow-pulse {
+  animation: glowpulse 4.5s ease-in-out infinite;
+}
+@keyframes glowpulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+/* faint film grain over the scene */
+.film-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.caption {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-shadow: 0 1px 10px rgba(13, 8, 5, 0.95), 0 0 3px rgba(13, 8, 5, 0.95);
+}
+
+.fade-in {
+  animation: fadein 0.5s ease-out;
+}
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+:focus-visible {
+  outline: 2px solid var(--glow);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flame,
+  .glow-pulse,
+  .ember {
+    animation: none;
+  }
 }
