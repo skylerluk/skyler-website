@@ -1,0 +1,58 @@
+[
+  {
+    "id": "bsg",
+    "name": "Berkeley Strategy Group",
+    "role": "VP of Partnerships",
+    "years": "2024–present",
+    "description": "Student-run strategy consulting group at UC Berkeley.",
+    "link": ""
+  },
+  {
+    "id": "avmc",
+    "name": "Anthology Vision Management",
+    "role": "Founder / Consultant",
+    "years": "2025–present",
+    "description": "Consultancy venture.",
+    "link": "https://anthologyvm.com"
+  },
+  {
+    "id": "sailor",
+    "name": "Sailor",
+    "role": "Co-founder",
+    "years": "2026–present",
+    "description": "AI WhatsApp CRM for real estate agents (see Technical Builds).",
+    "link": "https://meetsailor.com"
+  },
+  {
+    "id": "tradematch",
+    "name": "Tradematch",
+    "role": "Founder",
+    "years": "2024",
+    "description": "Solo startup addressing underemployment in the trades.",
+    "link": ""
+  },
+  {
+    "id": "centerpiece",
+    "name": "Centerpiece",
+    "role": "Founder",
+    "years": "2024",
+    "description": "AI career-discovery tool for high schoolers (BMOE pitch).",
+    "link": ""
+  },
+  {
+    "id": "spc",
+    "name": "SPC (ISPMA @ Berkeley)",
+    "role": "President",
+    "years": "2024–2025",
+    "description": "Product management club at UC Berkeley.",
+    "link": ""
+  },
+  {
+    "id": "hbsa",
+    "name": "HBSA",
+    "role": "Corporate Relations",
+    "years": "2024–2025",
+    "description": "Haas Business Student Association.",
+    "link": ""
+  }
+]

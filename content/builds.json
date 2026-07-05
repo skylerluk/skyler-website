@@ -1,0 +1,52 @@
+[
+  {
+    "id": "sailor",
+    "name": "Sailor",
+    "status": "Live",
+    "featured": true,
+    "oneLiner": "An AI WhatsApp CRM for real estate agents — it sorts leads and runs follow-up around the agent instead of replacing them.",
+    "detail": "Shipped to production, with architecture audits I ran on my own codebase. Automates the busywork around a real agent (the O-Ring play), not the agent themselves.",
+    "stack": ["Next.js", "WhatsApp API", "Webhooks", "Mobile"],
+    "links": [{ "label": "meetsailor.com", "url": "https://meetsailor.com" }]
+  },
+  {
+    "id": "stax",
+    "name": "Stax",
+    "status": "Prototype",
+    "featured": false,
+    "oneLiner": "A tracker for the routines that actually make you you — health stack as identity, not metrics.",
+    "detail": "The authenticity-over-performance idea applied to a health app: depth over virality, honest over commercial.",
+    "stack": ["Figma Make", "Identity"],
+    "links": []
+  },
+  {
+    "id": "uber-wrapped",
+    "name": "Uber Wrapped",
+    "status": "Live",
+    "featured": false,
+    "oneLiner": "Turns a year of your Uber rides into a story told back to you.",
+    "detail": "Personal data to narrative. Built in code (not a no-code tool).",
+    "stack": ["React", "Data viz"],
+    "links": [{ "label": "uber-wrapped.vercel.app", "url": "https://uber-wrapped.vercel.app" }]
+  },
+  {
+    "id": "teacher-copilot",
+    "name": "Engin 183 Teacher Co-Pilot",
+    "status": "Prototype",
+    "featured": false,
+    "oneLiner": "A co-pilot for teachers — lesson support, less busywork.",
+    "detail": "Built for Engin 183 at Berkeley.",
+    "stack": ["Figma Make", "Education"],
+    "links": []
+  },
+  {
+    "id": "gtm-ai",
+    "name": "GTM AI",
+    "status": "Internal",
+    "featured": false,
+    "oneLiner": "Go-to-market AI tooling that powers Sailor's outreach.",
+    "detail": "",
+    "stack": ["Automation", "Sailor"],
+    "links": []
+  }
+]
