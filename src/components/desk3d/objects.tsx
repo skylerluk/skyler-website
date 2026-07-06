@@ -51,6 +51,8 @@ export function DeskObject3D({
         <Html
           center
           position={captionOffset}
+          zIndexRange={[15, 0]}
+          wrapperClass="hidden md:block"
           style={{ pointerEvents: "none", opacity: hover ? 1 : 0.72, transition: "opacity .3s" }}
         >
           <span className="caption whitespace-nowrap">{label}</span>
