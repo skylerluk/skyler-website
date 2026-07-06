@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useRouter } from "next/navigation";
 import { useFrame } from "@react-three/fiber";
-import { RoundedBox, useGLTF, Html } from "@react-three/drei";
+import { RoundedBox, Html } from "@react-three/drei";
 import { BrushedAluminum, OakWood, PaperMaterial, WaxMaterial } from "./materials";
 import { appleLogoAlpha, handwritingTexture } from "./decals";
 
@@ -142,20 +142,36 @@ export function Candle() {
   );
 }
 
-/* ---------- GLTF notebook (Poly Haven, CC0) ---------- */
+/* ---------- closed composition notebook ---------- */
 
-export function Notebook(props: { scale?: number; rotation?: [number, number, number] }) {
-  const { scene } = useGLTF("/assets/models/binder_notebook/binder_notebook_1k.gltf");
-  const cloned = useMemo(() => {
-    const s = scene.clone(true);
-    s.traverse((o) => {
-      if (o instanceof THREE.Mesh) { o.castShadow = true; o.receiveShadow = true; }
-    });
-    return s;
-  }, [scene]);
-  return <primitive object={cloned} {...props} />;
+export function Notebook() {
+  return (
+    <group>
+      {/* page block, slightly inset so cream edges show on three sides */}
+      <mesh castShadow receiveShadow position={[0.012, 0.042, 0]}>
+        <boxGeometry args={[0.66, 0.07, 0.92]} />
+        <PaperMaterial tint="#e7dcc2" repeat={[2, 0.4]} />
+      </mesh>
+      {/* covers */}
+      <RoundedBox args={[0.7, 0.014, 0.96]} radius={0.007} smoothness={4} castShadow receiveShadow position={[0, 0.088, 0]}>
+        <meshStandardMaterial color="#33291f" roughness={0.55} />
+      </RoundedBox>
+      <RoundedBox args={[0.7, 0.014, 0.96]} radius={0.007} smoothness={4} castShadow receiveShadow position={[0, 0.007, 0]}>
+        <meshStandardMaterial color="#2a211a" roughness={0.55} />
+      </RoundedBox>
+      {/* spine */}
+      <mesh castShadow position={[-0.345, 0.048, 0]}>
+        <boxGeometry args={[0.02, 0.096, 0.96]} />
+        <meshStandardMaterial color="#12100d" roughness={0.5} />
+      </mesh>
+      {/* elastic strap */}
+      <mesh position={[0.2, 0.049, 0]}>
+        <boxGeometry args={[0.022, 0.1, 0.965]} />
+        <meshStandardMaterial color="#2c241d" roughness={0.8} />
+      </mesh>
+    </group>
+  );
 }
-useGLTF.preload("/assets/models/binder_notebook/binder_notebook_1k.gltf");
 
 /* ---------- phone, propped ---------- */
 
@@ -219,15 +235,33 @@ export function Papers() {
   );
 }
 
-/* ---------- post-its ---------- */
+/* ---------- propped ethos card: "Actions > words" ---------- */
 
-export function PostIt({ lines, tint }: { lines: string[]; tint?: string }) {
-  const tex = useMemo(() => handwritingTexture(lines, tint ? { bg: tint } : {}), [lines, tint]);
+export function EthosCard() {
+  const tex = useMemo(
+    () =>
+      handwritingTexture(["Actions", "> words"], {
+        bg: "#efe5cd",
+        ink: "#2e241d",
+        width: 512,
+        height: 320,
+        fontFrac: 0.24,
+      }),
+    [],
+  );
   return (
-    <mesh castShadow receiveShadow rotation={[-Math.PI / 2, 0, 0.1]} position={[0, 0.003, 0]}>
-      <planeGeometry args={[0.24, 0.24]} />
-      <meshStandardMaterial map={tex} roughness={0.95} metalness={0} />
-    </mesh>
+    <group>
+      {/* card face, leaning back like a tent card */}
+      <mesh castShadow position={[0, 0.16, 0]} rotation={[-0.18, 0, 0.015]}>
+        <planeGeometry args={[0.52, 0.33]} />
+        <meshStandardMaterial map={tex} roughness={0.92} metalness={0} side={THREE.DoubleSide} />
+      </mesh>
+      {/* folded back panel that props it up */}
+      <mesh castShadow position={[0, 0.155, -0.09]} rotation={[0.62, 0, 0.015]}>
+        <planeGeometry args={[0.52, 0.34]} />
+        <meshStandardMaterial color="#e2d6ba" roughness={0.95} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
   );
 }
 
@@ -250,15 +284,63 @@ export function Books() {
   );
 }
 
-export function Pens() {
+function Pen({ body, tip, metal = false }: { body: string; tip: string; metal?: boolean }) {
   return (
     <group>
-      {([{ c: "#2d2622", z: 0, r: 0.1 }, { c: "#4a3d33", z: 0.06, r: -0.06 }, { c: "#b89a6e", z: 0.12, r: 0.02 }] as const).map((p, i) => (
-        <mesh key={i} castShadow receiveShadow rotation={[0, p.r + Math.PI / 2.2, Math.PI / 2]} position={[0, 0.012, p.z]}>
-          <cylinderGeometry args={[0.011, 0.011, 0.5, 12]} />
-          <meshStandardMaterial color={p.c} roughness={0.35} metalness={0.35} />
+      {/* barrel */}
+      <mesh castShadow receiveShadow>
+        <cylinderGeometry args={[0.014, 0.014, 0.42, 16]} />
+        <meshStandardMaterial color={body} roughness={metal ? 0.3 : 0.42} metalness={metal ? 0.85 : 0.15} />
+      </mesh>
+      {/* tapered nose cone */}
+      <mesh castShadow position={[0, -0.235, 0]}>
+        <cylinderGeometry args={[0.013, 0.004, 0.05, 16]} />
+        <meshStandardMaterial color="#8f8072" roughness={0.3} metalness={0.9} />
+      </mesh>
+      {/* tip */}
+      <mesh position={[0, -0.264, 0]}>
+        <cylinderGeometry args={[0.0035, 0.0015, 0.012, 8]} />
+        <meshStandardMaterial color={tip} roughness={0.25} metalness={0.8} />
+      </mesh>
+      {/* end cap */}
+      <mesh castShadow position={[0, 0.214, 0]}>
+        <sphereGeometry args={[0.014, 12, 8]} />
+        <meshStandardMaterial color={body} roughness={0.4} metalness={metal ? 0.85 : 0.15} />
+      </mesh>
+      {/* clip */}
+      <mesh castShadow position={[0.015, 0.16, 0]}>
+        <boxGeometry args={[0.005, 0.09, 0.008]} />
+        <meshStandardMaterial color="#a5947e" roughness={0.28} metalness={0.95} />
+      </mesh>
+    </group>
+  );
+}
+
+export function Pens() {
+  // two pens and a pencil, laid at easy angles — resting flat on the desk
+  return (
+    <group>
+      <group position={[0, 0.015, 0]} rotation={[Math.PI / 2, 0, Math.PI / 2.3]}>
+        <Pen body="#26201b" tip="#3b3b3d" />
+      </group>
+      <group position={[0.05, 0.015, 0.07]} rotation={[Math.PI / 2, 0, Math.PI / 2.12]}>
+        <Pen body="#8d7f6d" tip="#2a2a2c" metal />
+      </group>
+      {/* pencil: hex-ish barrel, wood cone, graphite tip */}
+      <group position={[-0.04, 0.014, 0.14]} rotation={[Math.PI / 2, 0, Math.PI / 2.5]}>
+        <mesh castShadow receiveShadow>
+          <cylinderGeometry args={[0.012, 0.012, 0.4, 6]} />
+          <meshStandardMaterial color="#c9a86a" roughness={0.6} metalness={0} />
         </mesh>
-      ))}
+        <mesh castShadow position={[0, -0.225, 0]}>
+          <cylinderGeometry args={[0.011, 0.002, 0.05, 12]} />
+          <meshStandardMaterial color="#e0cfa8" roughness={0.8} />
+        </mesh>
+        <mesh position={[0, -0.253, 0]}>
+          <cylinderGeometry args={[0.002, 0.0005, 0.01, 8]} />
+          <meshStandardMaterial color="#2b2b2e" roughness={0.4} />
+        </mesh>
+      </group>
     </group>
   );
 }
