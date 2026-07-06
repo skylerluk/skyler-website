@@ -56,15 +56,18 @@ export function DeskHome3D() {
 
   return (
     <div className="film-grain relative h-dvh w-full overflow-hidden bg-night">
-      {/* fast poster while the 3D bundle loads */}
-      {!ready && (
-        // eslint-disable-next-line @next/next/no-img-element -- full-bleed poster; already an optimized 43KB jpg
+      {/* Poster only while the 3D bundle loads AND only when the desk is meant
+          to be lit (returning visitor). The dark intro must stay near-black —
+          bg-night matches the 3D scene background, so no poster is needed and
+          we never flash the (lit) desk before "light the candle". */}
+      {!ready && lit && (
+        // eslint-disable-next-line @next/next/no-img-element -- full-bleed poster; optimized jpg
         <img
           src="/og.jpg"
           alt=""
           aria-hidden
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ filter: "brightness(0.16) saturate(0.9)" }}
+          style={{ filter: "brightness(0.85) saturate(0.95)" }}
         />
       )}
 
