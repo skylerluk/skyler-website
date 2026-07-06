@@ -212,18 +212,9 @@ const run = async () => {
   }
   writeFileSync(`${OUT}manifest.json`, JSON.stringify(manifest, null, 2));
 
-  // OG image: the lit desk, composited (base + all object layers), 1200x630
-  const layers = await Promise.all(
-    Object.keys(objects).map(async (id) => ({
-      input: await sharp(`${OUT}obj-${id}.png`).toBuffer(),
-    })),
-  );
-  // sharp resizes before compositing, so flatten layers first, then resize
-  const flat = await sharp(`${OUT}base.webp`).composite(layers).png().toBuffer();
-  await sharp(flat)
-    .resize(1200, 630, { fit: "cover", position: "attention" })
-    .jpeg({ quality: 80 })
-    .toFile(new URL("../public/og.jpg", import.meta.url).pathname);
-  console.log("desk art + og image written");
+  // NOTE: public/og.jpg is intentionally NOT generated here. It is a real
+  // capture of the live 3D desk (see the fix-intro-flash change); regenerating
+  // it from these baked layers would revert it to the old 2.5D illustration.
+  console.log("baked desk fallback art written to public/desk/");
 };
 run();
