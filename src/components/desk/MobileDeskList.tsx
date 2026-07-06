@@ -8,7 +8,7 @@ const blurbs: Record<string, string> = {
   notebook: "Essays and journals — the notebook.",
   laptop: "Things I've shipped — the MacBook.",
   folder: "Ventures and roles — the manila folder.",
-  "postit-about": "Who I am — the yellow post-it.",
+  "postit-about": "Who I am — the loose papers.",
   phone: "@skysaidso — the propped phone.",
 };
 

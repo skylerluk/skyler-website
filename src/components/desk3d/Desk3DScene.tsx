@@ -11,7 +11,7 @@ import { ContactShadows, Environment } from "@react-three/drei";
 import { Bloom, DepthOfField, EffectComposer, N8AO, Noise, Vignette } from "@react-three/postprocessing";
 import { CandleFlame } from "./CandleFlame";
 import {
-  Books, Candle, DeskObject3D, DeskSlab, Folder, Macbook, Notebook, Papers, Pens, Phone, PostIt,
+  Books, Candle, DeskObject3D, DeskSlab, EthosCard, Folder, Macbook, Notebook, Papers, Pens, Phone,
 } from "./objects";
 
 const FLAME_POS: [number, number, number] = [-1.7, 0.5, -0.75];
@@ -189,8 +189,8 @@ export function Desk3DScene({
         <Candle />
       </group>
 
-      <DeskObject3D label="Writings" route="/writings" lit={lit} position={[-1.28, 0, 0.42]} rotation={[0, 0.14, 0]} captionOffset={[0.34, 0.05, 0.5]}>
-        <Notebook scale={1.7} rotation={[0, Math.PI / 2 + 0.1, 0]} />
+      <DeskObject3D label="Writings" route="/writings" lit={lit} position={[-1.22, 0, 0.28]} rotation={[0, 0.14, 0]} captionOffset={[0.38, 0.05, 0.62]}>
+        <Notebook />
       </DeskObject3D>
 
       <DeskObject3D label="Technical Builds" route="/builds" lit={lit} position={[0, 0, -0.5]} captionOffset={[0, 0.05, 0.72]}>
@@ -201,8 +201,9 @@ export function Desk3DScene({
         <Folder />
       </DeskObject3D>
 
-      <DeskObject3D label="About Me" route="/about" lit={lit} position={[1.78, 0, -1.05]} rotation={[0, -0.18, 0]} captionOffset={[0, 0.04, 0.28]}>
-        <PostIt lines={["about", "me"]} />
+      {/* loose papers are the About Me object */}
+      <DeskObject3D label="About Me" route="/about" lit={lit} position={[1.35, 0, -0.85]} rotation={[0, -0.08, 0]} captionOffset={[0, 0.04, 0.55]}>
+        <Papers />
       </DeskObject3D>
 
       <DeskObject3D label="Video" route="/video" lit={lit} position={[1.62, 0, 0.18]} captionOffset={[0, 0.02, 0.5]}>
@@ -210,12 +211,10 @@ export function Desk3DScene({
       </DeskObject3D>
 
       {/* ambiance (not clickable) */}
-      <group position={[1.08, 0, -0.85]}><Papers /></group>
       <group position={[-1.05, 0, -0.45]}><Pens /></group>
-      <group position={[-0.5, 0, 0.55]}>
-        <PostIt lines={["actions >", "words"]} tint="#e3c057" />
-      </group>
-      <group position={[-1.58, 0, 0.85]}><Books /></group>
+      {/* the ethos card — propped above the MacBook, toward the candle */}
+      <group position={[-0.88, 0, -1.02]} rotation={[0, 0.12, 0]}><EthosCard /></group>
+      <group position={[-1.78, 0, 1.05]}><Books /></group>
 
       {!flags.nocs && (
         <ContactShadows position={[0, 0.002, 0]} opacity={0.62} scale={7} blur={2.2} far={1.2} resolution={512} color="#140b05" />
