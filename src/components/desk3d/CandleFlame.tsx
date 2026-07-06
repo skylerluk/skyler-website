@@ -46,7 +46,7 @@ const noise = (t: number) =>
 export function CandleFlame({
   position,
   lit,
-  intensity = 3.4,
+  intensity = 26,
 }: {
   position: [number, number, number];
   lit: boolean;

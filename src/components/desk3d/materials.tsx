@@ -2,14 +2,21 @@
 
 import { useMemo } from "react";
 import * as THREE from "three";
-import { useTexture } from "@react-three/drei";
+import { useLoader } from "@react-three/fiber";
+
+// plain TextureLoader via useLoader — drei's useTexture eagerly initTexture()s
+// on the GL context, which crashes ANGLE Metal in some Chromium builds
+const useTexture = (urls: string[]) => useLoader(THREE.TextureLoader, urls);
 
 /** Real PBR texture sets (CC0, see public/assets/README.md). No CSS gradients. */
 
 function configure(t: THREE.Texture, repeat: [number, number], colorSpace?: string) {
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.repeat.set(...repeat);
-  t.anisotropy = 8;
+  // spike debug: ?aniso=0 disables anisotropic filtering (suspected ANGLE Metal crash)
+  if (typeof location === "undefined" || !location.search.includes("aniso=0")) {
+    t.anisotropy = 8;
+  }
   if (colorSpace) t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
@@ -27,6 +34,10 @@ export function OakWood(props: { repeat?: [number, number] }) {
     configure(diff, [rx, ry], "srgb");
     [nor, rough, ao].forEach((t) => configure(t, [rx, ry]));
   }, [diff, nor, rough, ao, rx, ry]);
+  // spike debug: ?plain=1 strips the material down to diffuse-only
+  if (typeof location !== "undefined" && location.search.includes("plain=1")) {
+    return <meshStandardMaterial map={diff} />;
+  }
   return (
     <meshPhysicalMaterial
       map={diff}
@@ -98,6 +109,10 @@ export function PaperMaterial({
 
 /** Candle wax — transmission + thickness fakes subsurface glow near the flame. */
 export function WaxMaterial() {
+  // spike debug: ?nowax=1 downgrades to a plain material to isolate GPU crashes
+  if (typeof location !== "undefined" && location.search.includes("nowax=1")) {
+    return <meshStandardMaterial color="#f0e0c0" roughness={0.38} />;
+  }
   return (
     <meshPhysicalMaterial
       color="#f0e0c0"

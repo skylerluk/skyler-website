@@ -6,7 +6,7 @@
 
 import { useRef } from "react";
 import * as THREE from "three";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
 import { Bloom, DepthOfField, EffectComposer, Noise, Vignette } from "@react-three/postprocessing";
 import { CandleFlame } from "./CandleFlame";
@@ -16,13 +16,19 @@ import {
 
 const FLAME_POS: [number, number, number] = [-1.7, 0.5, -0.75];
 
+// spike debug: raw texture, zero property mutations
+function MinTexturedMaterial() {
+  const tex = useLoader(THREE.TextureLoader, "/assets/wood/oak_diff.jpg");
+  return <meshStandardMaterial map={tex} />;
+}
+
 /** <LightReveal> — candle press lifts the scene by ramping exposure + env, not a black overlay. */
 function LightReveal({ lit, instant }: { lit: boolean; instant: boolean }) {
   const { gl, scene } = useThree();
   const done = useRef(false);
   useFrame(() => {
-    const targetExp = lit ? 1.05 : 0.14;
-    const targetEnv = lit ? 0.32 : 0.05;
+    const targetExp = lit ? 1.05 : 0.3;
+    const targetEnv = lit ? 0.4 : 0.06;
     if (instant && !done.current) {
       gl.toneMappingExposure = targetExp;
       scene.environmentIntensity = targetEnv;
@@ -60,9 +66,20 @@ export function Desk3DScene({
   reduced: boolean;
   onCandleClick: () => void;
 }) {
+  // debug flags (spike only): ?min=1 bare scene · noenv=1 · noshadow=1 · fx=0 · dof=0
+  const q = typeof location !== "undefined" ? location.search : "";
+  const flags = {
+    min: new URLSearchParams(q).get("min"),
+    noenv: q.includes("noenv=1"),
+    noshadow: q.includes("noshadow=1"),
+    nofx: q.includes("fx=0"),
+    nodof: q.includes("dof=0"),
+    nocs: q.includes("nocs=1"),
+    only: new URLSearchParams(q).get("only"), // slab | slabflame | objects
+  };
   return (
     <Canvas
-      shadows="soft"
+      shadows={flags.noshadow ? false : "soft"}
       dpr={[1, 1.75]}
       camera={{ position: [0, 3.55, 2.05], fov: 35 }}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 0.14 }}
@@ -71,7 +88,32 @@ export function Desk3DScene({
         scene.fog = new THREE.Fog("#0d0805", 5.5, 9.5);
       }}
     >
-      <Environment files="/assets/hdri/artist_workshop_1k.hdr" environmentIntensity={0.05} />
+      {/* debug: ?min=1 bare sanity scene · ?min=2 same + one raw texture */}
+      {flags.min ? (
+        <>
+          <ambientLight intensity={2} />
+          <mesh position={[0, 0.5, 0]}>
+            <boxGeometry args={[1, 1, 1]} />
+            {flags.min === "2" ? <MinTexturedMaterial /> : <meshStandardMaterial color="orange" />}
+          </mesh>
+        </>
+      ) : flags.only === "slab" ? (
+        <>
+          <ambientLight intensity={1.5} />
+          <DeskSlab />
+        </>
+      ) : flags.only === "slabflame" ? (
+        <>
+          <hemisphereLight args={["#3a2a1c", "#14100b", 0.4]} />
+          <LightReveal lit={lit} instant={instant} />
+          <CandleFlame position={FLAME_POS} lit={lit} />
+          <DeskSlab />
+        </>
+      ) : (
+        <>
+      {!flags.noenv && <Environment files="/assets/hdri/artist_workshop_1k.hdr" environmentIntensity={0.05} />}
+      {/* whisper of warm fill so shadow sides never crush to pure black */}
+      <hemisphereLight args={["#3a2a1c", "#14100b", 0.25]} />
       <LightReveal lit={lit} instant={instant} />
       <CameraRig reduced={reduced} />
       <CandleFlame position={FLAME_POS} lit={lit} />
@@ -116,14 +158,24 @@ export function Desk3DScene({
       </group>
       <group position={[-1.62, 0, 0.95]}><Books /></group>
 
-      <ContactShadows position={[0, 0.002, 0]} opacity={0.62} scale={7} blur={2.2} far={1.2} resolution={512} color="#140b05" />
+      {!flags.nocs && (
+        <ContactShadows position={[0, 0.002, 0]} opacity={0.62} scale={7} blur={2.2} far={1.2} resolution={512} color="#140b05" />
+      )}
+        </>
+      )}
 
-      <EffectComposer>
-        <Bloom mipmapBlur intensity={0.75} luminanceThreshold={0.85} luminanceSmoothing={0.2} />
-        <DepthOfField focusDistance={0.02} focalLength={0.06} bokehScale={2.2} />
-        <Vignette eskil={false} offset={0.18} darkness={0.78} />
-        <Noise premultiply opacity={0.055} />
-      </EffectComposer>
+      {!flags.min && !flags.nofx && (
+        <EffectComposer>
+          <Bloom mipmapBlur intensity={0.75} luminanceThreshold={0.85} luminanceSmoothing={0.2} />
+          {!flags.nodof ? (
+            <DepthOfField focusDistance={0.02} focalLength={0.06} bokehScale={2.2} />
+          ) : (
+            <></>
+          )}
+          <Vignette eskil={false} offset={0.18} darkness={0.78} />
+          <Noise premultiply opacity={0.055} />
+        </EffectComposer>
+      )}
     </Canvas>
   );
 }
