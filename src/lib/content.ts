@@ -84,6 +84,30 @@ export function getEssay(slug: string): Essay | undefined {
   return getEssays().find((e) => e.slug === slug);
 }
 
+export type BuildStatus = "Live" | "Prototype" | "Internal";
+
+export type Build = {
+  id: string;
+  name: string;
+  status: BuildStatus;
+  featured: boolean;
+  oneLiner: string;
+  detail: string;
+  stack: string[];
+  links: { label: string; url: string }[];
+};
+
+export function getBuilds(): Build[] {
+  // builds.json is pre-vetted public product copy (04-content-and-privacy.md)
+  return JSON.parse(
+    readFileSync(join(CONTENT_DIR, "builds.json"), "utf8"),
+  ) as Build[];
+}
+
+export function getBuild(id: string): Build | undefined {
+  return getBuilds().find((b) => b.id === id);
+}
+
 export const journalTags = (js: JournalEntry[]) =>
   [...new Set(js.flatMap((j) => j.tags))].sort();
 
