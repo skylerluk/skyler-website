@@ -4,11 +4,11 @@
    useFrame callbacks run per-frame outside render; mutating three.js objects
    (camera, renderer exposure, scene env) there is the R3F idiom. */
 
-import { useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
-import { Bloom, DepthOfField, EffectComposer, Noise, Vignette } from "@react-three/postprocessing";
+import { Bloom, DepthOfField, EffectComposer, N8AO, Noise, Vignette } from "@react-three/postprocessing";
 import { CandleFlame } from "./CandleFlame";
 import {
   Books, Candle, DeskObject3D, DeskSlab, Folder, Macbook, Notebook, Papers, Pens, Phone, PostIt,
@@ -41,16 +41,49 @@ function LightReveal({ lit, instant }: { lit: boolean; instant: boolean }) {
   return null;
 }
 
-/** Locked near-top-down camera with gentle clamped pointer parallax. */
-function CameraRig({ reduced }: { reduced: boolean }) {
-  const { camera, pointer } = useThree();
+/** Bloom whose intensity rides the candle-press reveal (dark → lit).
+ *  Reads a mutable ref, not props — the composer subtree must stay
+ *  render-stable or rebuilding the N8AO pass kills the canvas. */
+function RampedBloom({ reveal }: { reveal: React.RefObject<{ lit: boolean; instant: boolean }> }) {
+  const bloom = useRef<{ intensity: number } | null>(null);
   useFrame(() => {
+    if (!bloom.current || !reveal.current) return;
+    const target = reveal.current.lit ? 0.55 : 0.08;
+    bloom.current.intensity = reveal.current.instant
+      ? target
+      : THREE.MathUtils.lerp(bloom.current.intensity, target, 0.035);
+  });
+  return (
+    <Bloom
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ref={bloom as any}
+      mipmapBlur
+      intensity={0.08}
+      luminanceThreshold={1.0}
+      luminanceSmoothing={0.25}
+    />
+  );
+}
+
+/** Locked near-top-down camera with gentle clamped pointer parallax.
+ *  Narrow (portrait) viewports re-aim at the candle and widen the fov so the
+ *  switch stays in frame on phones. */
+function CameraRig({ reduced }: { reduced: boolean }) {
+  const { camera, pointer, size } = useThree();
+  useFrame(() => {
+    const narrow = size.width / size.height < 0.8;
     const px = reduced ? 0 : pointer.x;
     const py = reduced ? 0 : pointer.y;
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, px * 0.22, 0.04);
+    const cam = camera as THREE.PerspectiveCamera;
+    const fov = narrow ? 52 : 34;
+    if (Math.abs(cam.fov - fov) > 0.01) {
+      cam.fov = fov;
+      cam.updateProjectionMatrix();
+    }
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x, (narrow ? -0.7 : 0) + px * 0.22, 0.04);
     camera.position.y = THREE.MathUtils.lerp(camera.position.y, 4.3 + py * 0.12, 0.04);
     camera.position.z = THREE.MathUtils.lerp(camera.position.z, 2.55, 0.04);
-    camera.lookAt(0, 0, -0.05);
+    camera.lookAt(narrow ? -0.7 : 0, 0, -0.15);
   });
   return null;
 }
@@ -77,6 +110,32 @@ export function Desk3DScene({
     nocs: q.includes("nocs=1"),
     only: new URLSearchParams(q).get("only"), // slab | slabflame | objects
   };
+
+  // mutable reveal state for the composer (see RampedBloom)
+  const revealRef = useRef({ lit, instant });
+  useEffect(() => {
+    revealRef.current = { lit, instant };
+  }, [lit, instant]);
+
+  // the effect chain must keep a stable element identity across lit toggles
+  const composer = useMemo(
+    () => (
+      <EffectComposer>
+        <N8AO aoRadius={0.28} intensity={2.2} distanceFalloff={0.6} quality="medium" halfRes />
+        <RampedBloom reveal={revealRef} />
+        {!flags.nodof ? (
+          // gentle: desk plane tack-sharp, only frame edges soften
+          <DepthOfField focusDistance={0.0048} focalLength={0.018} bokehScale={1.25} />
+        ) : (
+          <></>
+        )}
+        <Vignette eskil={false} offset={0.18} darkness={0.78} />
+        <Noise premultiply opacity={0.055} />
+      </EffectComposer>
+    ),
+    [flags.nodof],
+  );
+
   return (
     <Canvas
       shadows={flags.noshadow ? false : "soft"}
@@ -134,29 +193,29 @@ export function Desk3DScene({
         <Notebook scale={1.7} rotation={[0, Math.PI / 2 + 0.1, 0]} />
       </DeskObject3D>
 
-      <DeskObject3D label="Technical Builds" route="/builds" lit={lit} position={[0, 0, -0.05]} captionOffset={[0, 0.05, 0.72]}>
+      <DeskObject3D label="Technical Builds" route="/builds" lit={lit} position={[0, 0, -0.5]} captionOffset={[0, 0.05, 0.72]}>
         <Macbook />
       </DeskObject3D>
 
-      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} position={[0.28, 0, 0.82]} rotation={[0, -0.06, 0]} captionOffset={[0, 0.04, 0.52]}>
+      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} position={[0.32, 0, 0.55]} rotation={[0, -0.06, 0]} captionOffset={[0, 0.04, 0.52]}>
         <Folder />
       </DeskObject3D>
 
-      <DeskObject3D label="About Me" route="/about" lit={lit} position={[1.82, 0, -1.0]} rotation={[0, -0.18, 0]} captionOffset={[0, 0.04, 0.28]}>
+      <DeskObject3D label="About Me" route="/about" lit={lit} position={[1.78, 0, -1.05]} rotation={[0, -0.18, 0]} captionOffset={[0, 0.04, 0.28]}>
         <PostIt lines={["about", "me"]} />
       </DeskObject3D>
 
-      <DeskObject3D label="Video" route="/video" lit={lit} position={[1.58, 0, 0.42]} captionOffset={[0, 0.02, 0.5]}>
+      <DeskObject3D label="Video" route="/video" lit={lit} position={[1.62, 0, 0.18]} captionOffset={[0, 0.02, 0.5]}>
         <Phone />
       </DeskObject3D>
 
       {/* ambiance (not clickable) */}
-      <group position={[1.12, 0, -0.5]}><Papers /></group>
-      <group position={[-1.05, 0, -0.35]}><Pens /></group>
-      <group position={[-0.55, 0, 0.78]}>
+      <group position={[1.08, 0, -0.85]}><Papers /></group>
+      <group position={[-1.05, 0, -0.45]}><Pens /></group>
+      <group position={[-0.5, 0, 0.55]}>
         <PostIt lines={["actions >", "words"]} tint="#e3c057" />
       </group>
-      <group position={[-1.62, 0, 0.95]}><Books /></group>
+      <group position={[-1.58, 0, 0.85]}><Books /></group>
 
       {!flags.nocs && (
         <ContactShadows position={[0, 0.002, 0]} opacity={0.62} scale={7} blur={2.2} far={1.2} resolution={512} color="#140b05" />
@@ -164,18 +223,7 @@ export function Desk3DScene({
         </>
       )}
 
-      {!flags.min && !flags.nofx && (
-        <EffectComposer>
-          <Bloom mipmapBlur intensity={0.5} luminanceThreshold={1.0} luminanceSmoothing={0.25} />
-          {!flags.nodof ? (
-            <DepthOfField focusDistance={0.02} focalLength={0.06} bokehScale={2.2} />
-          ) : (
-            <></>
-          )}
-          <Vignette eskil={false} offset={0.18} darkness={0.78} />
-          <Noise premultiply opacity={0.055} />
-        </EffectComposer>
-      )}
+      {!flags.min && !flags.nofx && composer}
     </Canvas>
   );
 }
