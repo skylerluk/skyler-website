@@ -45,25 +45,34 @@ export function appleLogoAlpha(size = 256): THREE.CanvasTexture {
 
 export function handwritingTexture(
   lines: string[],
-  { bg = "#e9c964", ink = "#3b2f2a", size = 256 }: { bg?: string; ink?: string; size?: number } = {},
+  {
+    bg = "#e9c964",
+    ink = "#3b2f2a",
+    width = 512,
+    height = 512,
+    fontFrac = 0.17,
+  }: { bg?: string; ink?: string; width?: number; height?: number; fontFrac?: number } = {},
 ): THREE.CanvasTexture {
   const c = document.createElement("canvas");
-  c.width = c.height = size;
+  c.width = width;
+  c.height = height;
   const g = c.getContext("2d")!;
   g.fillStyle = bg;
-  g.fillRect(0, 0, size, size);
-  // faint paper tooth so the sticky note doesn't read as flat color
-  for (let i = 0; i < 1200; i++) {
+  g.fillRect(0, 0, width, height);
+  // faint paper tooth so the card doesn't read as flat color
+  for (let i = 0; i < (width * height) / 55; i++) {
     g.fillStyle = `rgba(0,0,0,${Math.random() * 0.03})`;
-    g.fillRect(Math.random() * size, Math.random() * size, 1.5, 1.5);
+    g.fillRect(Math.random() * width, Math.random() * height, 1.5, 1.5);
   }
   g.fillStyle = ink;
-  g.font = `${size / 6}px "Bradley Hand", "Comic Sans MS", cursive`;
+  g.font = `600 ${Math.round(height * fontFrac)}px "Bradley Hand", "Comic Sans MS", cursive`;
   g.textAlign = "center";
+  g.textBaseline = "middle";
+  const start = 0.5 - ((lines.length - 1) * fontFrac * 1.35) / 2;
   lines.forEach((l, i) => {
     g.save();
-    g.translate(size / 2, size * (0.42 + i * 0.24));
-    g.rotate((Math.random() - 0.5) * 0.06);
+    g.translate(width / 2, height * (start + i * fontFrac * 1.35));
+    g.rotate((Math.random() - 0.5) * 0.03);
     g.fillText(l, 0, 0);
     g.restore();
   });
