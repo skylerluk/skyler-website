@@ -65,8 +65,8 @@ export function DeskObject3D({
 export function DeskSlab() {
   return (
     <mesh receiveShadow position={[0, -0.06, 0]}>
-      <boxGeometry args={[5.6, 0.12, 3.6]} />
-      <OakWood />
+      <boxGeometry args={[8.5, 0.12, 5.4]} />
+      <OakWood repeat={[3.4, 2.2]} />
     </mesh>
   );
 }
@@ -159,14 +159,17 @@ useGLTF.preload("/assets/models/binder_notebook/binder_notebook_1k.gltf");
 
 export function Phone() {
   return (
-    <group rotation={[-0.32, 0.18, 0]} position={[0, 0.09, 0]}>
-      <RoundedBox args={[0.34, 0.02, 0.68]} radius={0.012} smoothness={4} castShadow receiveShadow rotation={[Math.PI / 2 - 0.28, 0, 0]}>
-        <meshStandardMaterial color="#17130f" metalness={0.6} roughness={0.4} />
-      </RoundedBox>
-      {/* glass */}
-      <mesh rotation={[Math.PI / 2 - 0.28, Math.PI, 0]} position={[0, -0.008, -0.006]}>
-        <planeGeometry args={[0.32, 0.66]} />
-        <meshPhysicalMaterial color="#060505" metalness={0} roughness={0.08} clearcoat={1} clearcoatRoughness={0.06} />
+    <group rotation={[0, 0.16, 0]}>
+      {/* propped against a low stand: leaning back ~25° */}
+      <group position={[0, 0.15, 0]} rotation={[-0.44, 0, 0]}>
+        <RoundedBox args={[0.34, 0.7, 0.024]} radius={0.014} smoothness={4} castShadow>
+          <meshPhysicalMaterial color="#14100c" metalness={0.4} roughness={0.32} clearcoat={0.9} clearcoatRoughness={0.12} />
+        </RoundedBox>
+      </group>
+      {/* stand wedge */}
+      <mesh castShadow receiveShadow position={[0, 0.05, 0.12]} rotation={[0.4, 0, 0]}>
+        <boxGeometry args={[0.16, 0.02, 0.22]} />
+        <meshStandardMaterial color="#2a221a" roughness={0.7} />
       </mesh>
     </group>
   );
@@ -178,12 +181,12 @@ export function Folder() {
   return (
     <group>
       <RoundedBox args={[1.05, 0.012, 0.78]} radius={0.006} castShadow receiveShadow position={[0, 0.012, 0]}>
-        <PaperMaterial tint="#c8a061" roughness={0.95} />
+        <PaperMaterial tint="#b59464" roughness={0.95} />
       </RoundedBox>
       {/* tab */}
       <mesh castShadow position={[-0.32, 0.019, -0.365]}>
         <boxGeometry args={[0.3, 0.008, 0.07]} />
-        <PaperMaterial tint="#c8a061" roughness={0.95} />
+        <PaperMaterial tint="#b59464" roughness={0.95} />
       </mesh>
       {/* sheets peeking out */}
       <mesh position={[0.02, 0.021, 0.01]}>
@@ -191,7 +194,7 @@ export function Folder() {
         <PaperMaterial tint="#efe6d2" />
       </mesh>
       <RoundedBox args={[1.05, 0.012, 0.78]} radius={0.006} castShadow receiveShadow position={[0, 0.031, 0.012]} rotation={[0.012, 0, 0]}>
-        <PaperMaterial tint="#c8a061" roughness={0.95} />
+        <PaperMaterial tint="#b59464" roughness={0.95} />
       </RoundedBox>
     </group>
   );

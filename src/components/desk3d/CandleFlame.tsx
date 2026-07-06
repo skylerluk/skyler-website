@@ -46,7 +46,7 @@ const noise = (t: number) =>
 export function CandleFlame({
   position,
   lit,
-  intensity = 26,
+  intensity = 15,
 }: {
   position: [number, number, number];
   lit: boolean;
@@ -67,8 +67,8 @@ export function CandleFlame({
       const target = lit ? 1 : 0;
       const s = THREE.MathUtils.lerp(sprite.current.scale.x / 0.11, target, 0.08);
       sprite.current.scale.set(
-        0.11 * s * (1 + 0.05 * n),
-        0.24 * s * (1 + 0.09 * n),
+        0.15 * s * (1 + 0.05 * n),
+        0.32 * s * (1 + 0.09 * n),
         1,
       );
       sprite.current.position.x = position[0] + 0.004 * n;
@@ -87,7 +87,7 @@ export function CandleFlame({
       {/* key light — soft PCF shadows, warm */}
       <pointLight
         ref={light}
-        position={[position[0], position[1] + 0.16, position[2]]}
+        position={[position[0], position[1] + 0.34, position[2]]}
         color="#ffb066"
         intensity={0}
         distance={0}
@@ -97,7 +97,7 @@ export function CandleFlame({
         shadow-bias={-0.0015}
         shadow-radius={6}
       />
-      <sprite ref={sprite} position={[position[0], position[1] + 0.1, position[2]]} scale={[0, 0, 1]}>
+      <sprite ref={sprite} position={[position[0], position[1] + 0.16, position[2]]} scale={[0, 0, 1]}>
         <spriteMaterial
           map={texture}
           transparent

@@ -28,7 +28,7 @@ function LightReveal({ lit, instant }: { lit: boolean; instant: boolean }) {
   const done = useRef(false);
   useFrame(() => {
     const targetExp = lit ? 1.05 : 0.3;
-    const targetEnv = lit ? 0.4 : 0.06;
+    const targetEnv = lit ? 0.55 : 0.06;
     if (instant && !done.current) {
       gl.toneMappingExposure = targetExp;
       scene.environmentIntensity = targetEnv;
@@ -48,8 +48,8 @@ function CameraRig({ reduced }: { reduced: boolean }) {
     const px = reduced ? 0 : pointer.x;
     const py = reduced ? 0 : pointer.y;
     camera.position.x = THREE.MathUtils.lerp(camera.position.x, px * 0.22, 0.04);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, 3.55 + py * 0.12, 0.04);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, 2.05, 0.04);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, 4.3 + py * 0.12, 0.04);
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, 2.55, 0.04);
     camera.lookAt(0, 0, -0.05);
   });
   return null;
@@ -81,7 +81,7 @@ export function Desk3DScene({
     <Canvas
       shadows={flags.noshadow ? false : "soft"}
       dpr={[1, 1.75]}
-      camera={{ position: [0, 3.55, 2.05], fov: 35 }}
+      camera={{ position: [0, 4.3, 2.55], fov: 34 }}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 0.14 }}
       onCreated={({ scene }) => {
         scene.background = new THREE.Color("#0d0805");
@@ -130,15 +130,15 @@ export function Desk3DScene({
         <Candle />
       </group>
 
-      <DeskObject3D label="Writings" route="/writings" lit={lit} position={[-1.35, 0, 0.18]} rotation={[0, 0.14, 0]} captionOffset={[0, 0.05, 0.52]}>
-        <Notebook scale={2.1} rotation={[0, Math.PI / 2 + 0.1, 0]} />
+      <DeskObject3D label="Writings" route="/writings" lit={lit} position={[-1.28, 0, 0.42]} rotation={[0, 0.14, 0]} captionOffset={[0.34, 0.05, 0.5]}>
+        <Notebook scale={1.7} rotation={[0, Math.PI / 2 + 0.1, 0]} />
       </DeskObject3D>
 
       <DeskObject3D label="Technical Builds" route="/builds" lit={lit} position={[0, 0, -0.05]} captionOffset={[0, 0.05, 0.72]}>
         <Macbook />
       </DeskObject3D>
 
-      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} position={[0.22, 0, 0.95]} rotation={[0, -0.06, 0]} captionOffset={[0, 0.04, 0.55]}>
+      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} position={[0.28, 0, 0.82]} rotation={[0, -0.06, 0]} captionOffset={[0, 0.04, 0.52]}>
         <Folder />
       </DeskObject3D>
 
@@ -152,7 +152,7 @@ export function Desk3DScene({
 
       {/* ambiance (not clickable) */}
       <group position={[1.12, 0, -0.5]}><Papers /></group>
-      <group position={[-1.15, 0, -0.42]}><Pens /></group>
+      <group position={[-1.05, 0, -0.35]}><Pens /></group>
       <group position={[-0.55, 0, 0.78]}>
         <PostIt lines={["actions >", "words"]} tint="#e3c057" />
       </group>
@@ -166,7 +166,7 @@ export function Desk3DScene({
 
       {!flags.min && !flags.nofx && (
         <EffectComposer>
-          <Bloom mipmapBlur intensity={0.75} luminanceThreshold={0.85} luminanceSmoothing={0.2} />
+          <Bloom mipmapBlur intensity={0.5} luminanceThreshold={1.0} luminanceSmoothing={0.25} />
           {!flags.nodof ? (
             <DepthOfField focusDistance={0.02} focalLength={0.06} bokehScale={2.2} />
           ) : (

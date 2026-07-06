@@ -115,14 +115,14 @@ export function WaxMaterial() {
   }
   return (
     <meshPhysicalMaterial
-      color="#f0e0c0"
-      roughness={0.38}
-      transmission={0.5}
-      thickness={0.9}
+      color="#eee3c8"
+      roughness={0.42}
+      transmission={0.32}
+      thickness={0.7}
       ior={1.44}
-      attenuationColor="#ffb877"
-      attenuationDistance={0.9}
-      specularIntensity={0.6}
+      attenuationColor="#ffd9a3"
+      attenuationDistance={1.4}
+      specularIntensity={0.5}
     />
   );
 }
