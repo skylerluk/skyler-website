@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Skyler Luk",
     description: "A candlelit desk you light and explore.",
-    images: ["/desk/base.webp"],
+    images: ["/og.jpg"],
   },
 };
 

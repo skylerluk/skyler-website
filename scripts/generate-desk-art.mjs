@@ -211,6 +211,19 @@ const run = async () => {
     await sharp(Buffer.from(svg(W, H, body))).png({ compressionLevel: 9, palette: true }).toFile(`${OUT}obj-${id}.png`);
   }
   writeFileSync(`${OUT}manifest.json`, JSON.stringify(manifest, null, 2));
-  console.log("desk art written to public/desk/");
+
+  // OG image: the lit desk, composited (base + all object layers), 1200x630
+  const layers = await Promise.all(
+    Object.keys(objects).map(async (id) => ({
+      input: await sharp(`${OUT}obj-${id}.png`).toBuffer(),
+    })),
+  );
+  // sharp resizes before compositing, so flatten layers first, then resize
+  const flat = await sharp(`${OUT}base.webp`).composite(layers).png().toBuffer();
+  await sharp(flat)
+    .resize(1200, 630, { fit: "cover", position: "attention" })
+    .jpeg({ quality: 80 })
+    .toFile(new URL("../public/og.jpg", import.meta.url).pathname);
+  console.log("desk art + og image written");
 };
 run();
