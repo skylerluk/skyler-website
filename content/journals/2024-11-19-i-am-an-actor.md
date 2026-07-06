@@ -3,8 +3,8 @@ date: 2024-11-19
 title: I Am an Actor
 place: Berkeley
 tags: [authenticity, freedom, creation]
-isPublic: false
-review: "HELD. The full journal entry names two people (excluded per privacy rule). Only this name-free excerpt is included. Skyler must approve before setting isPublic: true."
+isPublic: true
+review: "Name-free excerpt only (the full journal entry names two people and stays private). Publication approved by Skyler, 2026-07-06."
 excerpt: "I feel discontent, because I know that I am not me. I know that I am an actor."
 ---
 

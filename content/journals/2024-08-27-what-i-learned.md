@@ -3,8 +3,8 @@ date: 2024-08-27
 title: What I Learned This Summer
 place: Berkeley
 tags: [burnout, creation, discipline]
-isPublic: false
-review: "HELD. The surrounding journal entry names several people (excluded per privacy rule). Only this name-free excerpt is included. Skyler must approve before setting isPublic: true."
+isPublic: true
+review: "Name-free excerpt only (the surrounding journal entry names several people and stays private). Publication approved by Skyler, 2026-07-06."
 excerpt: "Actions speak louder than words. You must follow through when it gets difficult. The reward comes after difficulty."
 ---
 

@@ -108,6 +108,34 @@ export function getBuild(id: string): Build | undefined {
   return getBuilds().find((b) => b.id === id);
 }
 
+export type Venture = {
+  id: string;
+  name: string;
+  role: string;
+  years: string;
+  description: string;
+  link: string;
+};
+
+export function getVentures(): Venture[] {
+  // ventures.json is pre-vetted public-appropriate framing (04-content-and-privacy.md)
+  return JSON.parse(
+    readFileSync(join(CONTENT_DIR, "ventures.json"), "utf8"),
+  ) as Venture[];
+}
+
+/**
+ * The About copy is a DRAFT (isPublic: false in the file). Skyler explicitly
+ * approved rendering it flagged as a draft; this is the one sanctioned
+ * exception to the isPublic gate, and the page must show a draft marker.
+ */
+export function getAboutDraft(): { body: string; isDraft: boolean } {
+  const { data, content } = matter(
+    readFileSync(join(CONTENT_DIR, "about-draft.md"), "utf8"),
+  );
+  return { body: stripComments(content), isDraft: data.isPublic !== true };
+}
+
 export const journalTags = (js: JournalEntry[]) =>
   [...new Set(js.flatMap((j) => j.tags))].sort();
 

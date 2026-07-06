@@ -20,10 +20,11 @@ for pattern in "$EXCLUDE" "$HARD_RULES"; do
   fi
 done
 
-# Belt & braces: no isPublic:false content titles in output.
-HELD=$(grep -riE "I Am an Actor|What I Learned This Summer" .next/server/app .next/static out 2>/dev/null || true)
+# Belt & braces: fragments of still-private source material (full 2024 entries)
+# that must never ship even though their name-free excerpts are now published.
+HELD=$(grep -riE "dying pet|Toto|CFC retreat|Big Game diet" .next/server/app .next/static out 2>/dev/null || true)
 if [ -n "$HELD" ]; then
-  echo "PRIVACY FAIL — held (isPublic:false) content found in build output"
+  echo "PRIVACY FAIL — private journal material found in build output"
   echo "$HELD" | head -10
   FAIL=1
 fi

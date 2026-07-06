@@ -101,12 +101,20 @@ body {
   text-shadow: 0 1px 10px rgba(13, 8, 5, 0.95), 0 0 3px rgba(13, 8, 5, 0.95);
 }
 
+/* entering a room: warm cross-dissolve with a gentle settle */
 .fade-in {
   animation: fadein 0.5s ease-out;
 }
 @keyframes fadein {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-in { animation: fadein-still 0.3s ease-out; }
+  @keyframes fadein-still {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }
 
 :focus-visible {
