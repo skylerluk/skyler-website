@@ -1,9 +1,9 @@
-import { DeskScene } from "@/components/desk/DeskScene";
+import { DeskHome3D } from "@/components/desk3d/DeskHome3D";
 
 export default function Home() {
   return (
     <main aria-label="The desk">
-      <DeskScene />
+      <DeskHome3D />
     </main>
   );
 }
