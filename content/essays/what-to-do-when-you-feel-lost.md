@@ -6,10 +6,18 @@ tags: [creation, philosophy]
 isPublic: true
 ---
 
-In order to effectively confront our existentialist feelings, we must bring order to chaos — that is, we must create something for our lives. To take charge, to take responsibility, to take meaningful steps toward the future.
+I was slouched over at my desk listening to a Jordan Peterson video when he said something that made me immediately fix my posture and straighten my back.
 
-Creation from nothing is inherently good. Confronted with chaotic potential, the move is not to drift but to make something of it.
+He was describing his interpretation of the first act of the biblical Book of Genesis. In the first few lines of Genesis, God creates the world from nothing by speaking it into existence. Once he has finished with creation, he says "It is good." As Peterson puts it, God confronts chaotic potential and creates something good.
 
-Carpe diem. You have control over yourself. Your conduct, your actions, your move.
+What does this mean for our lives?
 
-<!-- TODO: expand from wiki (skyler-thoughts-and-notes-1, "Creation as Confronting Chaos"). Do not invent beyond the source. -->
+These lines in Genesis answer the question: "In a life where you have infinite choices, what do you do?" The answer is that when something is created from nothing, it is inherently good.
+
+In order to effectively confront our existentialist feelings we must bring order to chaos, i.e. create something for our lives. To take charge, take responsibility, take meaningful steps towards the future.
+
+To Carpe Diem, or Seize the Day as Robin Williams might put it.
+
+In a world where it feels like we have no control, like we're making a best guess through a hazy fog, there is one path forward that makes sense. You have control over yourself.
+
+Your conduct, your actions, your move.
