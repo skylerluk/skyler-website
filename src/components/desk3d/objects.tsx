@@ -166,27 +166,27 @@ export function Candle() {
 export function Notebook() {
   return (
     <group>
-      {/* page block, slightly inset so cream edges show on three sides */}
-      <mesh castShadow receiveShadow position={[0.012, 0.042, 0]}>
-        <boxGeometry args={[0.66, 0.07, 0.92]} />
+      {/* page block: only the fore-edge peeks out below the cover */}
+      <mesh castShadow receiveShadow position={[0.01, 0.032, 0]}>
+        <boxGeometry args={[0.67, 0.05, 0.9]} />
         <PaperMaterial tint="#e7dcc2" repeat={[2, 0.4]} />
       </mesh>
-      {/* covers */}
-      <RoundedBox args={[0.7, 0.014, 0.96]} radius={0.007} smoothness={4} castShadow receiveShadow position={[0, 0.088, 0]}>
-        <meshStandardMaterial color="#33291f" roughness={0.55} />
+      {/* covers — matte so they don't mirror the environment */}
+      <RoundedBox args={[0.7, 0.014, 0.96]} radius={0.007} smoothness={4} castShadow receiveShadow position={[0, 0.062, 0]}>
+        <meshStandardMaterial color="#332a20" roughness={0.85} envMapIntensity={0.35} />
       </RoundedBox>
       <RoundedBox args={[0.7, 0.014, 0.96]} radius={0.007} smoothness={4} castShadow receiveShadow position={[0, 0.007, 0]}>
-        <meshStandardMaterial color="#2a211a" roughness={0.55} />
+        <meshStandardMaterial color="#2a211a" roughness={0.85} envMapIntensity={0.35} />
       </RoundedBox>
       {/* spine */}
-      <mesh castShadow position={[-0.345, 0.048, 0]}>
-        <boxGeometry args={[0.02, 0.096, 0.96]} />
-        <meshStandardMaterial color="#12100d" roughness={0.5} />
+      <mesh castShadow position={[-0.345, 0.036, 0]}>
+        <boxGeometry args={[0.018, 0.068, 0.96]} />
+        <meshStandardMaterial color="#171310" roughness={0.85} envMapIntensity={0.3} />
       </mesh>
-      {/* elastic strap */}
-      <mesh position={[0.2, 0.049, 0]}>
-        <boxGeometry args={[0.022, 0.1, 0.965]} />
-        <meshStandardMaterial color="#2c241d" roughness={0.8} />
+      {/* elastic strap wrapped over the top cover */}
+      <mesh position={[0.2, 0.037, 0]}>
+        <boxGeometry args={[0.022, 0.072, 0.962]} />
+        <meshStandardMaterial color="#221b15" roughness={0.9} envMapIntensity={0.3} />
       </mesh>
     </group>
   );
