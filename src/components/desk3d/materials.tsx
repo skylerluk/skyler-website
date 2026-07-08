@@ -57,11 +57,11 @@ export function OakWood(props: { repeat?: [number, number] }) {
       // slightly cool multiply tint: pales the oak and pulls the orange out
       color="#e4e3db"
       normalMap={nor}
-      roughnessMap={rough}
+      // no roughnessMap / clearcoat: their glossy patches mirrored the 1k HDRI
+      // as pixelated bright rectangles across the desk at grazing angles
+      roughness={0.9}
       aoMap={ao}
-      clearcoat={0.12}
-      clearcoatRoughness={0.75}
-      envMapIntensity={0.35}
+      envMapIntensity={0.2}
     />
   );
 }

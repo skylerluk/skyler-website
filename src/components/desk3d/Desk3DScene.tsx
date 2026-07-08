@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
-import { Bloom, DepthOfField, EffectComposer, N8AO, Noise, Vignette } from "@react-three/postprocessing";
+import { Bloom, DepthOfField, EffectComposer, Noise, Vignette } from "@react-three/postprocessing";
 import type { DepthOfFieldEffect } from "postprocessing";
 import { CandleFlame } from "./CandleFlame";
 import {
@@ -138,7 +138,7 @@ function DustMotes({ reveal }: { reveal: React.RefObject<RevealState> }) {
 
 /** Bloom whose intensity rides the candle-press reveal (dark → lit).
  *  Reads a mutable ref, not props — the composer subtree must stay
- *  render-stable or rebuilding the N8AO pass kills the canvas. */
+ *  render-stable; rebuilding the effect chain has killed the canvas before. */
 function RampedBloom({ reveal }: { reveal: React.RefObject<RevealState> }) {
   const bloom = useRef<{ intensity: number } | null>(null);
   useFrame(() => {
@@ -217,7 +217,9 @@ export function Desk3DScene({
   const composer = useMemo(
     () => (
       <EffectComposer>
-        <N8AO aoRadius={0.28} intensity={2.2} distanceFalloff={0.6} quality="medium" halfRes />
+        {/* No SSAO pass: N8AO (half- AND full-res) smeared blocky ghost
+            rectangles across the desk. Contact shadows + the wood's baked AO
+            map + the flame's PCF shadows cover the crevice darkening. */}
         <RampedBloom reveal={revealRef} />
         {!flags.nodof ? <RackedDoF reveal={revealRef} focus={focusRef} /> : <></>}
         <Vignette eskil={false} offset={0.18} darkness={0.78} />

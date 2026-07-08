@@ -204,9 +204,9 @@ export function CandleFlame({
         distance={0}
         decay={2}
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0015}
-        shadow-radius={6}
+        shadow-radius={4}
       />
       {/* custom shader flame on a billboarded quad */}
       <mesh
