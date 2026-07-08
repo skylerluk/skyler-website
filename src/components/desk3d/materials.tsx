@@ -10,9 +10,18 @@ const useTexture = (urls: string[]) => useLoader(THREE.TextureLoader, urls);
 
 /** Real PBR texture sets (CC0, see public/assets/README.md). No CSS gradients. */
 
-function configure(t: THREE.Texture, repeat: [number, number], colorSpace?: string) {
+function configure(
+  t: THREE.Texture,
+  repeat: [number, number],
+  colorSpace?: string,
+  rotation = 0,
+) {
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.repeat.set(...repeat);
+  if (rotation) {
+    t.center.set(0.5, 0.5);
+    t.rotation = rotation;
+  }
   // spike debug: ?aniso=0 disables anisotropic filtering (suspected ANGLE Metal crash)
   if (typeof location === "undefined" || !location.search.includes("aniso=0")) {
     t.anisotropy = 8;
@@ -21,7 +30,9 @@ function configure(t: THREE.Texture, repeat: [number, number], colorSpace?: stri
   return t;
 }
 
-/** Light oak with satin clearcoat — the desk. */
+/** Light oak, desaturated toward ash, satin clearcoat — the desk.
+ *  Grain rotated to run the desk's length; repeat tuned so the veneer's board
+ *  seams read as fine grain, not stripes (small repeat) or planks (large). */
 export function OakWood(props: { repeat?: [number, number] }) {
   const [rx, ry] = props.repeat ?? [2.2, 1.4];
   const [diff, nor, rough, ao] = useTexture([
@@ -31,6 +42,8 @@ export function OakWood(props: { repeat?: [number, number] }) {
     "/assets/wood/oak_ao.jpg",
   ]);
   useMemo(() => {
+    // grain runs front-to-back (unrotated): the veneer's board seams read as
+    // subtle grain lines; rotating exposed them as large tonal patches
     configure(diff, [rx, ry], "srgb");
     [nor, rough, ao].forEach((t) => configure(t, [rx, ry]));
   }, [diff, nor, rough, ao, rx, ry]);
@@ -41,11 +54,14 @@ export function OakWood(props: { repeat?: [number, number] }) {
   return (
     <meshPhysicalMaterial
       map={diff}
+      // slightly cool multiply tint: pales the oak and pulls the orange out
+      color="#e4e3db"
       normalMap={nor}
       roughnessMap={rough}
       aoMap={ao}
-      clearcoat={0.18}
-      clearcoatRoughness={0.55}
+      clearcoat={0.12}
+      clearcoatRoughness={0.75}
+      envMapIntensity={0.35}
     />
   );
 }
@@ -67,9 +83,9 @@ export function BrushedAluminum({ tint = "#cfc8bd" }: { tint?: string }) {
       map={color}
       color={tint}
       normalMap={nor}
-      normalScale={new THREE.Vector2(0.45, 0.45)}
+      normalScale={new THREE.Vector2(0.65, 0.65)}
       roughnessMap={rough}
-      roughness={0.62}
+      roughness={0.4}
       metalnessMap={metal}
       metalness={1}
     />

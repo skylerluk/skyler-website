@@ -9,12 +9,17 @@ import * as THREE from "three";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
 import { Bloom, DepthOfField, EffectComposer, N8AO, Noise, Vignette } from "@react-three/postprocessing";
+import type { DepthOfFieldEffect } from "postprocessing";
 import { CandleFlame } from "./CandleFlame";
 import {
   Books, Candle, DeskObject3D, DeskSlab, EthosCard, Folder, Macbook, Notebook, Papers, Pens, Phone,
+  type SceneFocus,
 } from "./objects";
 
 const FLAME_POS: [number, number, number] = [-1.7, 0.5, -0.75];
+const FOCUS_HOME = new THREE.Vector3(0, 0.05, -0.1);
+
+type RevealState = { lit: boolean; instant: boolean; reduced: boolean };
 
 // spike debug: raw texture, zero property mutations
 function MinTexturedMaterial() {
@@ -41,10 +46,100 @@ function LightReveal({ lit, instant }: { lit: boolean; instant: boolean }) {
   return null;
 }
 
+/** Depth-of-field that racks focus to whichever object the cursor hovers. */
+function RackedDoF({
+  reveal,
+  focus,
+}: {
+  reveal: React.RefObject<RevealState>;
+  focus: React.RefObject<SceneFocus>;
+}) {
+  const dof = useRef<DepthOfFieldEffect>(null);
+  const point = useRef(FOCUS_HOME.clone());
+  useFrame(() => {
+    if (!dof.current) return;
+    const rack = focus.current?.hovered && !reveal.current?.reduced;
+    point.current.lerp(rack ? focus.current!.point : FOCUS_HOME, 0.06);
+    dof.current.target = point.current;
+  });
+  return (
+    <DepthOfField
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ref={dof as any}
+      target={[FOCUS_HOME.x, FOCUS_HOME.y, FOCUS_HOME.z]}
+      focalLength={0.018}
+      bokehScale={1.25}
+    />
+  );
+}
+
+// deterministic PRNG so mote seeding is pure (and stable across renders)
+function mulberry32(seed: number) {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Sparse dust motes drifting through the candle's light pool. */
+function DustMotes({ reveal }: { reveal: React.RefObject<RevealState> }) {
+  const COUNT = 64;
+  const pts = useRef<THREE.Points>(null);
+  const seeds = useMemo(() => {
+    const rnd = mulberry32(20260708);
+    // confined to the air column above the candle's pool, clear of the laptop
+    return Array.from({ length: COUNT }, () => ({
+      x: -2.4 + rnd() * 1.6,
+      y: 0.15 + rnd() * 1.2,
+      z: -1.6 + rnd() * 1.7,
+      s: 0.01 + rnd() * 0.025,
+      p: rnd() * Math.PI * 2,
+    }));
+  }, []);
+  const positions = useMemo(() => {
+    const a = new Float32Array(COUNT * 3);
+    seeds.forEach((sd, i) => a.set([sd.x, sd.y, sd.z], i * 3));
+    return a;
+  }, [seeds]);
+  useFrame(({ clock }) => {
+    if (!pts.current) return;
+    const mat = pts.current.material as THREE.PointsMaterial;
+    mat.opacity = THREE.MathUtils.lerp(mat.opacity, reveal.current?.lit ? 0.32 : 0, 0.03);
+    if (reveal.current?.reduced) return; // motes hold still under reduced motion
+    const t = clock.elapsedTime;
+    const arr = pts.current.geometry.attributes.position.array as Float32Array;
+    seeds.forEach((sd, i) => {
+      arr[i * 3] = sd.x + Math.sin(t * 0.22 + sd.p) * 0.09;
+      arr[i * 3 + 1] = 0.15 + ((sd.y + t * sd.s) % 1.2);
+      arr[i * 3 + 2] = sd.z + Math.cos(t * 0.18 + sd.p) * 0.09;
+    });
+    pts.current.geometry.attributes.position.needsUpdate = true;
+  });
+  return (
+    <points ref={pts} frustumCulled={false}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.009}
+        color="#ffd9a3"
+        transparent
+        opacity={0}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+        sizeAttenuation
+      />
+    </points>
+  );
+}
+
 /** Bloom whose intensity rides the candle-press reveal (dark → lit).
  *  Reads a mutable ref, not props — the composer subtree must stay
  *  render-stable or rebuilding the N8AO pass kills the canvas. */
-function RampedBloom({ reveal }: { reveal: React.RefObject<{ lit: boolean; instant: boolean }> }) {
+function RampedBloom({ reveal }: { reveal: React.RefObject<RevealState> }) {
   const bloom = useRef<{ intensity: number } | null>(null);
   useFrame(() => {
     if (!bloom.current || !reveal.current) return;
@@ -111,11 +206,12 @@ export function Desk3DScene({
     only: new URLSearchParams(q).get("only"), // slab | slabflame | objects
   };
 
-  // mutable reveal state for the composer (see RampedBloom)
-  const revealRef = useRef({ lit, instant });
+  // mutable reveal + focus state read per-frame by the effects (see RampedBloom)
+  const revealRef = useRef<RevealState>({ lit, instant, reduced });
   useEffect(() => {
-    revealRef.current = { lit, instant };
-  }, [lit, instant]);
+    revealRef.current = { lit, instant, reduced };
+  }, [lit, instant, reduced]);
+  const focusRef = useRef<SceneFocus>({ hovered: false, point: FOCUS_HOME.clone() });
 
   // the effect chain must keep a stable element identity across lit toggles
   const composer = useMemo(
@@ -123,12 +219,7 @@ export function Desk3DScene({
       <EffectComposer>
         <N8AO aoRadius={0.28} intensity={2.2} distanceFalloff={0.6} quality="medium" halfRes />
         <RampedBloom reveal={revealRef} />
-        {!flags.nodof ? (
-          // gentle: desk plane tack-sharp, only frame edges soften
-          <DepthOfField focusDistance={0.0048} focalLength={0.018} bokehScale={1.25} />
-        ) : (
-          <></>
-        )}
+        {!flags.nodof ? <RackedDoF reveal={revealRef} focus={focusRef} /> : <></>}
         <Vignette eskil={false} offset={0.18} darkness={0.78} />
         <Noise premultiply opacity={0.055} />
       </EffectComposer>
@@ -171,11 +262,12 @@ export function Desk3DScene({
       ) : (
         <>
       {!flags.noenv && <Environment files="/assets/hdri/artist_workshop_1k.hdr" environmentIntensity={0.05} />}
-      {/* whisper of warm fill so shadow sides never crush to pure black */}
-      <hemisphereLight args={["#3a2a1c", "#14100b", 0.25]} />
+      {/* fill: cool sky over warm ground — warm key light, subtly cool shadows */}
+      <hemisphereLight args={["#3d4654", "#211710", 0.32]} />
       <LightReveal lit={lit} instant={instant} />
       <CameraRig reduced={reduced} />
-      <CandleFlame position={FLAME_POS} lit={lit} />
+      <CandleFlame position={FLAME_POS} lit={lit} instant={instant} reduced={reduced} focus={focusRef} />
+      <DustMotes reveal={revealRef} />
 
       <DeskSlab />
 
@@ -189,24 +281,24 @@ export function Desk3DScene({
         <Candle />
       </group>
 
-      <DeskObject3D label="Writings" route="/writings" lit={lit} position={[-1.22, 0, 0.28]} rotation={[0, 0.14, 0]} captionOffset={[0.38, 0.05, 0.62]}>
+      <DeskObject3D label="Writings" route="/writings" lit={lit} focus={focusRef} position={[-1.22, 0, 0.28]} rotation={[0, 0.14, 0]} captionOffset={[0, 0.05, 0.61]}>
         <Notebook />
       </DeskObject3D>
 
-      <DeskObject3D label="Technical Builds" route="/builds" lit={lit} position={[0, 0, -0.5]} captionOffset={[0, 0.05, 0.72]}>
+      <DeskObject3D label="Technical Builds" route="/builds" lit={lit} focus={focusRef} position={[0, 0, -0.5]} captionOffset={[0, 0.05, 0.58]}>
         <Macbook />
       </DeskObject3D>
 
-      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} position={[0.32, 0, 0.55]} rotation={[0, -0.06, 0]} captionOffset={[0, 0.04, 0.52]}>
+      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} focus={focusRef} position={[0.32, 0, 0.55]} rotation={[0, -0.06, 0]} captionOffset={[0, 0.04, 0.52]}>
         <Folder />
       </DeskObject3D>
 
       {/* loose papers are the About Me object */}
-      <DeskObject3D label="About Me" route="/about" lit={lit} position={[1.35, 0, -0.85]} rotation={[0, -0.08, 0]} captionOffset={[0, 0.04, 0.55]}>
+      <DeskObject3D label="About Me" route="/about" lit={lit} focus={focusRef} position={[1.32, 0, -0.85]} rotation={[0, -0.08, 0]} captionOffset={[0, 0.04, 0.53]}>
         <Papers />
       </DeskObject3D>
 
-      <DeskObject3D label="Video" route="/video" lit={lit} position={[1.62, 0, 0.18]} captionOffset={[0, 0.02, 0.5]}>
+      <DeskObject3D label="Video" route="/video" lit={lit} focus={focusRef} position={[1.55, 0, 0.18]} captionOffset={[0, 0.02, 0.47]}>
         <Phone />
       </DeskObject3D>
 
@@ -214,10 +306,10 @@ export function Desk3DScene({
       <group position={[-1.05, 0, -0.45]}><Pens /></group>
       {/* the ethos card — propped above the MacBook, toward the candle */}
       <group position={[-0.88, 0, -1.02]} rotation={[0, 0.12, 0]}><EthosCard /></group>
-      <group position={[-1.78, 0, 1.05]}><Books /></group>
+      <group position={[-1.72, 0, 0.8]}><Books /></group>
 
       {!flags.nocs && (
-        <ContactShadows position={[0, 0.002, 0]} opacity={0.62} scale={7} blur={2.2} far={1.2} resolution={512} color="#140b05" />
+        <ContactShadows position={[0, 0.002, 0]} opacity={0.72} scale={7} blur={1.9} far={1.1} resolution={1024} color="#120a04" />
       )}
         </>
       )}
