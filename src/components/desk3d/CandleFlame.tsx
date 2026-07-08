@@ -7,11 +7,15 @@
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import { smokeTexture } from "./decals";
+import type { SceneFocus } from "./objects";
 
 /**
  * <CandleFlame> — custom shader flame + the scene's key light.
- * One layered-noise signal drives BOTH the shader's flicker uniform and the
- * point-light intensity, so speculars and shadows move with the flame.
+ * One layered-noise signal drives the shader flicker, the point-light
+ * intensity, and the shadows/speculars. The flame leans gently toward the
+ * cursor and steadies when an object is hovered; lighting it flares like a
+ * match catching before settling.
  */
 
 const flameVertex = /* glsl */ `
@@ -27,6 +31,7 @@ const flameFragment = /* glsl */ `
   uniform float uTime;
   uniform float uFlicker;
   uniform float uOpacity;
+  uniform float uLean;
 
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -51,9 +56,9 @@ const flameFragment = /* glsl */ `
     // x centered on the wick, y = 0 at the flame base
     vec2 uv = vec2(vUv.x - 0.5, vUv.y);
 
-    // lateral sway grows with height; flicker widens it
+    // cursor lean + lateral sway grow with height; flicker widens the sway
     float sway = (fbm(vec2(uTime * 1.7, vUv.y * 3.0)) - 0.5) * 0.3 * vUv.y;
-    uv.x += sway * (0.6 + 0.5 * uFlicker);
+    uv.x += sway * (0.6 + 0.5 * uFlicker) + uLean * vUv.y * vUv.y;
 
     // teardrop: wide near the base, tapering to a point that dances
     float width = 0.30 * (1.0 - 0.75 * vUv.y * vUv.y) * (1.0 + 0.12 * uFlicker);
@@ -81,18 +86,42 @@ const flickerNoise = (t: number) =>
   0.28 * Math.sin(t * 13.1 + 1.4) +
   0.1 * Math.sin(t * 29.7 + 0.6);
 
+function hazeTexture(size = 128): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d")!;
+  const gr = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  gr.addColorStop(0, "rgba(255,190,120,0.55)");
+  gr.addColorStop(0.5, "rgba(255,160,80,0.16)");
+  gr.addColorStop(1, "rgba(255,140,60,0)");
+  g.fillStyle = gr;
+  g.fillRect(0, 0, size, size);
+  return new THREE.CanvasTexture(c);
+}
+
 export function CandleFlame({
   position,
   lit,
-  intensity = 15,
+  instant = false,
+  reduced = false,
+  focus,
+  intensity = 13,
 }: {
   position: [number, number, number];
   lit: boolean;
+  instant?: boolean;
+  reduced?: boolean;
+  focus?: React.RefObject<SceneFocus>;
   intensity?: number;
 }) {
   const light = useRef<THREE.PointLight>(null);
   const flame = useRef<THREE.Mesh>(null);
   const ember = useRef<THREE.Mesh>(null);
+  const haze = useRef<THREE.Sprite>(null);
+  const smoke = useRef<THREE.Mesh>(null);
+  const wasLit = useRef(lit);
+  const flareAt = useRef(-100);
+  const lean = useRef(0);
 
   const material = useMemo(
     () =>
@@ -103,6 +132,7 @@ export function CandleFlame({
           uTime: { value: 0 },
           uFlicker: { value: 0 },
           uOpacity: { value: 0 },
+          uLean: { value: 0 },
         },
         transparent: true,
         blending: THREE.AdditiveBlending,
@@ -111,24 +141,51 @@ export function CandleFlame({
       }),
     [],
   );
+  const hazeMap = useMemo(() => hazeTexture(), []);
+  const smokeMap = useMemo(() => smokeTexture(), []);
 
-  useFrame(({ clock, camera }) => {
+  useFrame(({ clock, camera, pointer }) => {
     const t = clock.elapsedTime;
-    const n = flickerNoise(t);
-    // one signal, three consumers: light, shader, scale
+
+    // the match catches: a brief flare when freshly lit (not on instant restore)
+    if (lit !== wasLit.current) {
+      if (lit && !instant) flareAt.current = t;
+      wasLit.current = lit;
+    }
+    const flare = lit ? Math.exp(-Math.max(0, t - flareAt.current) * 3.2) * 1.7 : 0;
+
+    // steadied flicker + zero lean while the visitor is reading an object
+    const hovered = focus?.current?.hovered ?? false;
+    const n = flickerNoise(t) * (hovered ? 0.35 : 1);
+    const targetLean = reduced || hovered ? 0 : THREE.MathUtils.clamp(pointer.x, -1, 1) * 0.22;
+    lean.current = THREE.MathUtils.lerp(lean.current, targetLean, 0.05);
+
     if (light.current) {
-      light.current.intensity = lit ? intensity * (1 + 0.13 * n) : 0;
+      light.current.intensity = lit ? intensity * (1 + 0.13 * n) * (1 + flare) : 0;
     }
     material.uniforms.uTime.value = t;
     material.uniforms.uFlicker.value = n;
+    material.uniforms.uLean.value = lean.current;
     material.uniforms.uOpacity.value = THREE.MathUtils.lerp(
       material.uniforms.uOpacity.value, lit ? 1 : 0, 0.08,
     );
     if (flame.current) {
-      // billboard toward the camera, growing in as it lights
       flame.current.quaternion.copy(camera.quaternion);
-      const s = THREE.MathUtils.lerp(flame.current.scale.x, lit ? 1 : 0.001, 0.08);
+      const s = THREE.MathUtils.lerp(flame.current.scale.x, lit ? 1 + flare * 0.35 : 0.001, 0.09);
       flame.current.scale.setScalar(s);
+    }
+    if (haze.current) {
+      const target = lit ? 0.34 + 0.05 * n : 0;
+      haze.current.material.opacity = THREE.MathUtils.lerp(haze.current.material.opacity, target, 0.05);
+    }
+    if (smoke.current) {
+      // a thin wisp rising off the flame tip, swaying with the noise
+      const mat = smoke.current.material as THREE.MeshBasicMaterial;
+      const target = lit && !reduced ? 0.16 : 0;
+      mat.opacity = THREE.MathUtils.lerp(mat.opacity, target, 0.04);
+      smoke.current.quaternion.copy(camera.quaternion);
+      smoke.current.position.x = position[0] + 0.02 + 0.025 * Math.sin(t * 0.7) + lean.current * 0.1;
+      smoke.current.rotation.z = 0.06 * Math.sin(t * 0.5);
     }
     if (ember.current) {
       (ember.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
@@ -141,7 +198,7 @@ export function CandleFlame({
       {/* key light — soft PCF shadows, warm; flicker-synced with the shader */}
       <pointLight
         ref={light}
-        position={[position[0], position[1] + 0.34, position[2]]}
+        position={[position[0], position[1] + 0.38, position[2]]}
         color="#ffb066"
         intensity={0}
         distance={0}
@@ -159,6 +216,15 @@ export function CandleFlame({
         scale={0.001}
       >
         <planeGeometry args={[0.17, 0.38]} />
+      </mesh>
+      {/* volumetric-ish haze pooling around the flame */}
+      <sprite ref={haze} position={[position[0], position[1] + 0.32, position[2]]} scale={[1.9, 1.9, 1]}>
+        <spriteMaterial map={hazeMap} transparent opacity={0} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </sprite>
+      {/* thin smoke wisp above the tip */}
+      <mesh ref={smoke} position={[position[0], position[1] + 0.85, position[2]]}>
+        <planeGeometry args={[0.16, 0.75]} />
+        <meshBasicMaterial map={smokeMap} transparent opacity={0} depthWrite={false} />
       </mesh>
       {/* glowing wick ember before the candle is lit */}
       <mesh ref={ember} position={[position[0], position[1] + 0.015, position[2]]}>
