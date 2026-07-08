@@ -128,6 +128,39 @@ export function DeskHome3D() {
         </motion.div>
       )}
 
+      {/* the one soft persistent hint — labels themselves only appear on hover */}
+      {lit && (
+        <motion.span
+          className="caption pointer-events-none absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 md:block"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.4 }}
+          transition={{ duration: 1.2, delay: instant ? 0.4 : 2.2 }}
+        >
+          explore the desk
+        </motion.span>
+      )}
+
+      {/* keyboard path to the sections (the 3D objects are pointer-only) */}
+      {lit && (
+        <nav aria-label="Desk sections" className="absolute left-6 top-16 z-30 hidden md:block">
+          {[
+            ["Writings", "/writings"],
+            ["Technical Builds", "/builds"],
+            ["Work & Ventures", "/work"],
+            ["About Me", "/about"],
+            ["Video", "/video"],
+          ].map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              className="caption block -translate-x-[200%] rounded px-2 py-1 focus-visible:translate-x-0"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+      )}
+
       {/* small screens: warm stack once lit (3D stays as backdrop) */}
       {lit && <MobileDeskList instant={instant} />}
     </div>
