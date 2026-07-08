@@ -1,14 +1,22 @@
 "use client";
 
+/* eslint-disable react-hooks/immutability --
+   useFrame callbacks and pointer handlers mutate three.js objects and shared
+   mutable refs (the R3F idiom); nothing here mutates during render. */
+
 import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useRouter } from "next/navigation";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox, Html } from "@react-three/drei";
 import { BrushedAluminum, OakWood, PaperMaterial, WaxMaterial } from "./materials";
-import { appleLogoAlpha, handwritingTexture } from "./decals";
+import { appleLogoAlpha, bookCoverTexture, handwritingTexture, videoScreenTexture } from "./decals";
 
 /* ---------- interactive wrapper: raycast hover lift + route ---------- */
+
+/** Shared mutable state the scene reads per-frame: what's hovered and where
+ *  the depth-of-field should rack. Plain object, mutated outside render. */
+export type SceneFocus = { hovered: boolean; point: THREE.Vector3 };
 
 export function DeskObject3D({
   label,
@@ -18,6 +26,7 @@ export function DeskObject3D({
   captionOffset = [0, 0, 0.55] as [number, number, number],
   position,
   rotation = [0, 0, 0] as [number, number, number],
+  focus,
 }: {
   label: string;
   route: string;
@@ -26,6 +35,7 @@ export function DeskObject3D({
   captionOffset?: [number, number, number];
   position: [number, number, number];
   rotation?: [number, number, number];
+  focus?: React.RefObject<SceneFocus>;
 }) {
   const router = useRouter();
   const group = useRef<THREE.Group>(null);
@@ -37,13 +47,20 @@ export function DeskObject3D({
     group.current.position.y = THREE.MathUtils.lerp(group.current.position.y, targetY, 0.14);
   });
 
+  const setHovered = (v: boolean) => {
+    setHover(v);
+    if (!focus?.current) return;
+    focus.current.hovered = v;
+    if (v) focus.current.point.set(position[0], position[1] + 0.05, position[2]);
+  };
+
   return (
     <group
       ref={group}
       position={position}
       rotation={rotation}
-      onPointerOver={(e) => { e.stopPropagation(); if (lit) { setHover(true); document.body.style.cursor = "pointer"; } }}
-      onPointerOut={() => { setHover(false); document.body.style.cursor = "auto"; }}
+      onPointerOver={(e) => { e.stopPropagation(); if (lit) { setHovered(true); document.body.style.cursor = "pointer"; } }}
+      onPointerOut={() => { setHovered(false); document.body.style.cursor = "auto"; }}
       onClick={(e) => { e.stopPropagation(); if (lit) router.push(route); }}
     >
       {children}
@@ -53,7 +70,8 @@ export function DeskObject3D({
           position={captionOffset}
           zIndexRange={[15, 0]}
           wrapperClass="hidden md:block"
-          style={{ pointerEvents: "none", opacity: hover ? 1 : 0.72, transition: "opacity .3s" }}
+          // resting scene stays calm and photographic: labels appear on hover
+          style={{ pointerEvents: "none", opacity: hover ? 1 : 0, transition: "opacity .35s" }}
         >
           <span className="caption whitespace-nowrap">{label}</span>
         </Html>
@@ -68,7 +86,7 @@ export function DeskSlab() {
   return (
     <mesh receiveShadow position={[0, -0.06, 0]}>
       <boxGeometry args={[8.5, 0.12, 5.4]} />
-      <OakWood repeat={[3.4, 2.2]} />
+      <OakWood repeat={[3.1, 1.95]} />
     </mesh>
   );
 }
@@ -76,7 +94,7 @@ export function DeskSlab() {
 /* ---------- MacBook: closed clamshell, brushed aluminum, flipped logo ---------- */
 
 export function Macbook() {
-  const logo = useMemo(() => appleLogoAlpha(), []);
+  const logo = useMemo(() => appleLogoAlpha(512), []);
   return (
     <group>
       {/* base */}
@@ -92,15 +110,16 @@ export function Macbook() {
       <RoundedBox args={[1.28, 0.022, 0.9]} radius={0.011} smoothness={4} castShadow receiveShadow position={[0, 0.062, 0]}>
         <BrushedAluminum tint="#d6cfc4" />
       </RoundedBox>
-      {/* etched logo — rotated 180° so it reads upside-down from the seat (correct) */}
+      {/* etched logo — rotated 180° so it reads upside-down from the seat (correct);
+          mirror-filled so it glints as the candle highlight moves */}
       <mesh position={[0, 0.0735, 0.02]} rotation={[-Math.PI / 2, 0, Math.PI]}>
         <planeGeometry args={[0.17, 0.2]} />
         <meshStandardMaterial
           alphaMap={logo}
           transparent
-          color="#3a3a3c"
+          color="#33333a"
           metalness={1}
-          roughness={0.12}
+          roughness={0.05}
           polygonOffset
           polygonOffsetFactor={-1}
         />
@@ -176,19 +195,33 @@ export function Notebook() {
 /* ---------- phone, propped ---------- */
 
 export function Phone() {
+  const screen = useMemo(() => videoScreenTexture(), []);
   return (
     <group rotation={[0, 0.16, 0]}>
-      {/* propped against a low stand: leaning back ~25° */}
+      {/* leaning back ~25°, propped from BEHIND (kickstand faces away from camera) */}
       <group position={[0, 0.15, 0]} rotation={[-0.44, 0, 0]}>
         <RoundedBox args={[0.34, 0.7, 0.024]} radius={0.014} smoothness={4} castShadow>
           <meshPhysicalMaterial color="#14100c" metalness={0.4} roughness={0.32} clearcoat={0.9} clearcoatRoughness={0.12} />
         </RoundedBox>
+        {/* lit screen: paused video with a play glyph */}
+        <mesh position={[0, 0, 0.0135]}>
+          <planeGeometry args={[0.315, 0.665]} />
+          <meshPhysicalMaterial
+            map={screen}
+            emissiveMap={screen}
+            emissive="#ffffff"
+            emissiveIntensity={0.85}
+            roughness={0.12}
+            clearcoat={1}
+            clearcoatRoughness={0.08}
+          />
+        </mesh>
+        {/* kickstand: hinged off the back, angled down to the desk */}
+        <mesh castShadow position={[0, -0.1, -0.055]} rotation={[0.75, 0, 0]}>
+          <boxGeometry args={[0.14, 0.3, 0.01]} />
+          <meshStandardMaterial color="#1c1712" roughness={0.65} metalness={0.3} />
+        </mesh>
       </group>
-      {/* stand wedge */}
-      <mesh castShadow receiveShadow position={[0, 0.05, 0.12]} rotation={[0.4, 0, 0]}>
-        <boxGeometry args={[0.16, 0.02, 0.22]} />
-        <meshStandardMaterial color="#2a221a" roughness={0.7} />
-      </mesh>
     </group>
   );
 }
@@ -206,12 +239,17 @@ export function Folder() {
         <boxGeometry args={[0.3, 0.008, 0.07]} />
         <PaperMaterial tint="#b59464" roughness={0.95} />
       </mesh>
-      {/* sheets peeking out */}
-      <mesh position={[0.02, 0.021, 0.01]}>
+      {/* sheets peeking out, slightly fanned */}
+      <mesh castShadow position={[0.035, 0.021, 0.03]} rotation={[0, 0.025, 0]}>
         <boxGeometry args={[1.0, 0.005, 0.73]} />
+        <PaperMaterial tint="#e9dfc6" />
+      </mesh>
+      <mesh position={[0.05, 0.026, 0.045]} rotation={[0, -0.02, 0]}>
+        <boxGeometry args={[0.98, 0.003, 0.71]} />
         <PaperMaterial tint="#efe6d2" />
       </mesh>
-      <RoundedBox args={[1.05, 0.012, 0.78]} radius={0.006} castShadow receiveShadow position={[0, 0.031, 0.012]} rotation={[0.012, 0, 0]}>
+      {/* top cover, hinged open a few degrees at the spine */}
+      <RoundedBox args={[1.05, 0.012, 0.78]} radius={0.006} castShadow receiveShadow position={[0, 0.055, -0.015]} rotation={[0.11, 0, 0.004]}>
         <PaperMaterial tint="#b59464" roughness={0.95} />
       </RoundedBox>
     </group>
@@ -225,11 +263,12 @@ export function Papers() {
     <group>
       <mesh receiveShadow castShadow rotation={[-Math.PI / 2, 0, 0.12]} position={[0, 0.004, 0]}>
         <planeGeometry args={[0.58, 0.8]} />
-        <PaperMaterial />
+        <PaperMaterial tint="#e6dcc0" />
       </mesh>
-      <mesh receiveShadow castShadow rotation={[-Math.PI / 2, 0, -0.07]} position={[0.06, 0.008, -0.03]}>
+      {/* top sheet lifts at one edge — a slight curl that catches a shadow */}
+      <mesh receiveShadow castShadow rotation={[-Math.PI / 2 + 0.06, 0.01, -0.07]} position={[0.06, 0.018, -0.03]}>
         <planeGeometry args={[0.58, 0.8]} />
-        <PaperMaterial tint="#f2ead8" />
+        <PaperMaterial tint="#ece2c9" />
       </mesh>
     </group>
   );
@@ -267,19 +306,55 @@ export function EthosCard() {
 
 /* ---------- ambiance: books + pens ---------- */
 
-export function Books() {
+/** A single worn hardcover: cover texture on top, page block, creased spine. */
+function Book({
+  size,
+  color,
+  cover,
+}: {
+  size: [number, number, number]; // w(spine→fore-edge), h, d
+  color: string;
+  cover: THREE.Texture;
+}) {
+  const [w, h, d] = size;
   return (
     <group>
-      <RoundedBox args={[0.62, 0.075, 0.42]} radius={0.008} castShadow receiveShadow position={[0, 0.0375, 0]} rotation={[0, 0.09, 0]}>
-        <meshStandardMaterial color="#5a3a2e" roughness={0.6} />
+      <RoundedBox args={[w, h, d]} radius={0.008} castShadow receiveShadow position={[0, h / 2, 0]}>
+        <meshStandardMaterial color={color} roughness={0.72} />
       </RoundedBox>
-      <mesh position={[0.01, 0.0375, 0]} rotation={[0, 0.09, 0]}>
-        <boxGeometry args={[0.6, 0.05, 0.4]} />
-        <PaperMaterial tint="#e6dcc4" repeat={[2, 0.3]} />
+      {/* page block showing at the fore-edge and ends */}
+      <mesh position={[0.012, h / 2, 0]}>
+        <boxGeometry args={[w - 0.035, h - 0.024, d - 0.02]} />
+        <PaperMaterial tint="#e3d8ba" repeat={[2, 0.3]} />
       </mesh>
-      <RoundedBox args={[0.56, 0.06, 0.38]} radius={0.008} castShadow receiveShadow position={[-0.03, 0.105, 0.02]} rotation={[0, -0.14, 0]}>
-        <meshStandardMaterial color="#8a6a3c" roughness={0.55} />
-      </RoundedBox>
+      {/* titled top board — reads from the camera */}
+      <mesh position={[0, h + 0.001, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
+        <planeGeometry args={[d * 0.98, w * 0.98]} />
+        <meshStandardMaterial map={cover} roughness={0.68} polygonOffset polygonOffsetFactor={-1} />
+      </mesh>
+    </group>
+  );
+}
+
+/** The only easter egg: Self-Reliance and Meditations, genuinely used. */
+export function Books() {
+  const selfReliance = useMemo(
+    () => bookCoverTexture("Self-Reliance", "R. W. Emerson", { bg: "#5c4a33" }),
+    [],
+  );
+  const meditations = useMemo(
+    () => bookCoverTexture("Meditations", "Marcus Aurelius", { bg: "#6e392c" }),
+    [],
+  );
+  return (
+    <group>
+      {/* side by side with a lazy overlap so both titles read */}
+      <group rotation={[0, 0.09, 0]}>
+        <Book size={[0.62, 0.075, 0.44]} color="#4e3d29" cover={selfReliance} />
+      </group>
+      <group position={[0.52, 0, 0.2]} rotation={[0, -0.32, 0]}>
+        <Book size={[0.56, 0.062, 0.4]} color="#5e2f24" cover={meditations} />
+      </group>
     </group>
   );
 }
