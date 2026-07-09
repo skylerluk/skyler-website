@@ -175,8 +175,11 @@ export function CandleFlame({
       flame.current.scale.setScalar(s);
     }
     if (haze.current) {
-      const target = lit ? 0.34 + 0.05 * n : 0;
+      // carries the candle glow now that post-bloom is gone
+      const target = lit ? 0.55 + 0.08 * n * (1 + flare) : 0;
       haze.current.material.opacity = THREE.MathUtils.lerp(haze.current.material.opacity, target, 0.05);
+      const hs = 2.3 + flare * 0.8;
+      haze.current.scale.set(hs, hs, 1);
     }
     if (smoke.current) {
       // a thin wisp rising off the flame tip, swaying with the noise

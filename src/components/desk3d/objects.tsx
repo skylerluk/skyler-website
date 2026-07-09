@@ -348,11 +348,11 @@ export function Books() {
   );
   return (
     <group>
-      {/* side by side with a lazy overlap so both titles read */}
-      <group rotation={[0, 0.09, 0]}>
+      {/* two separate books, a small gap between them so both titles read */}
+      <group rotation={[0, 0.06, 0]}>
         <Book size={[0.62, 0.075, 0.44]} color="#4e3d29" cover={selfReliance} />
       </group>
-      <group position={[0.52, 0, 0.2]} rotation={[0, -0.32, 0]}>
+      <group position={[0.44, 0, 0.42]} rotation={[0, -0.4, 0]}>
         <Book size={[0.56, 0.062, 0.4]} color="#5e2f24" cover={meditations} />
       </group>
     </group>
