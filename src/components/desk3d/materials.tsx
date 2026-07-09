@@ -30,39 +30,18 @@ function configure(
   return t;
 }
 
-/** Light oak, desaturated toward ash, satin clearcoat — the desk.
- *  Grain rotated to run the desk's length; repeat tuned so the veneer's board
- *  seams read as fine grain, not stripes (small repeat) or planks (large). */
+/** Warm pale fine-grained oak — the desk.
+ *  Procedurally generated (scripts/generate-wood.mjs): a single continuous
+ *  grain that tiles seamlessly. The CC0 oak_veneer maps were a multi-board
+ *  veneer whose planks tiled as pixelated tonal rectangles across the flat
+ *  desk; no material tweak could hide that, so the texture itself is replaced.
+ *  Diffuse-only, matte, low env reflection — nothing to mirror the HDRI. */
 export function OakWood(props: { repeat?: [number, number] }) {
   const [rx, ry] = props.repeat ?? [2.2, 1.4];
-  const [diff, nor, rough, ao] = useTexture([
-    "/assets/wood/oak_diff.jpg",
-    "/assets/wood/oak_nor_gl.jpg",
-    "/assets/wood/oak_rough.jpg",
-    "/assets/wood/oak_ao.jpg",
-  ]);
-  useMemo(() => {
-    // grain runs front-to-back (unrotated): the veneer's board seams read as
-    // subtle grain lines; rotating exposed them as large tonal patches
-    configure(diff, [rx, ry], "srgb");
-    [nor, rough, ao].forEach((t) => configure(t, [rx, ry]));
-  }, [diff, nor, rough, ao, rx, ry]);
-  // spike debug: ?plain=1 strips the material down to diffuse-only
-  if (typeof location !== "undefined" && location.search.includes("plain=1")) {
-    return <meshStandardMaterial map={diff} />;
-  }
+  const [diff] = useTexture(["/assets/wood/procedural_oak.jpg"]);
+  useMemo(() => configure(diff, [rx, ry], "srgb"), [diff, rx, ry]);
   return (
-    <meshPhysicalMaterial
-      map={diff}
-      // slightly cool multiply tint: pales the oak and pulls the orange out
-      color="#e4e3db"
-      normalMap={nor}
-      // no roughnessMap / clearcoat: their glossy patches mirrored the 1k HDRI
-      // as pixelated bright rectangles across the desk at grazing angles
-      roughness={0.9}
-      aoMap={ao}
-      envMapIntensity={0.2}
-    />
+    <meshStandardMaterial map={diff} color="#efe6d4" roughness={0.94} metalness={0} envMapIntensity={0.15} />
   );
 }
 

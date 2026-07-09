@@ -84,6 +84,20 @@ export function DeskHome3D() {
         </div>
       )}
 
+      {/* cinematic vignette — done in CSS instead of the WebGL composer, which
+          banded the candlelight falloff into blocky rectangles on some GPUs */}
+      {mode === "3d" && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-1000"
+          style={{
+            opacity: ready ? 1 : 0,
+            background:
+              "radial-gradient(120% 90% at 28% 40%, rgba(13,8,5,0) 42%, rgba(13,8,5,0.5) 78%, rgba(13,8,5,0.82) 100%)",
+          }}
+        />
+      )}
+
       {/* keyboard path: the candle stays a real, focusable switch */}
       <button
         type="button"

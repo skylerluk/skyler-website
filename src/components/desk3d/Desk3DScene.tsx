@@ -8,13 +8,20 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
-import { Bloom, DepthOfField, EffectComposer, Noise, Vignette } from "@react-three/postprocessing";
-import type { DepthOfFieldEffect } from "postprocessing";
 import { CandleFlame } from "./CandleFlame";
 import {
   Books, Candle, DeskObject3D, DeskSlab, EthosCard, Folder, Macbook, Notebook, Papers, Pens, Phone,
   type SceneFocus,
 } from "./objects";
+
+// NOTE: the @react-three/postprocessing EffectComposer was removed. On some
+// GPUs (reproduced on Apple M-series via ANGLE Metal) routing the scene through
+// the composer's render target banded the smooth candlelight falloff into
+// blocky rectangles across the desk — present with ANY effect, and even
+// bloom-only. The cinematic grade is now done reliably: the candle glows via
+// its own additive shader flame + halo, and vignette + film grain are CSS
+// overlays (see DeskHome3D). ACES tone mapping + the exposure reveal stay on
+// the renderer, not the composer.
 
 const FLAME_POS: [number, number, number] = [-1.7, 0.5, -0.75];
 const FOCUS_HOME = new THREE.Vector3(0, 0.05, -0.1);
@@ -44,33 +51,6 @@ function LightReveal({ lit, instant }: { lit: boolean; instant: boolean }) {
     scene.environmentIntensity = THREE.MathUtils.lerp(scene.environmentIntensity ?? 0.05, targetEnv, 0.035);
   });
   return null;
-}
-
-/** Depth-of-field that racks focus to whichever object the cursor hovers. */
-function RackedDoF({
-  reveal,
-  focus,
-}: {
-  reveal: React.RefObject<RevealState>;
-  focus: React.RefObject<SceneFocus>;
-}) {
-  const dof = useRef<DepthOfFieldEffect>(null);
-  const point = useRef(FOCUS_HOME.clone());
-  useFrame(() => {
-    if (!dof.current) return;
-    const rack = focus.current?.hovered && !reveal.current?.reduced;
-    point.current.lerp(rack ? focus.current!.point : FOCUS_HOME, 0.06);
-    dof.current.target = point.current;
-  });
-  return (
-    <DepthOfField
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ref={dof as any}
-      target={[FOCUS_HOME.x, FOCUS_HOME.y, FOCUS_HOME.z]}
-      focalLength={0.018}
-      bokehScale={1.25}
-    />
-  );
 }
 
 // deterministic PRNG so mote seeding is pure (and stable across renders)
@@ -136,30 +116,6 @@ function DustMotes({ reveal }: { reveal: React.RefObject<RevealState> }) {
   );
 }
 
-/** Bloom whose intensity rides the candle-press reveal (dark → lit).
- *  Reads a mutable ref, not props — the composer subtree must stay
- *  render-stable; rebuilding the effect chain has killed the canvas before. */
-function RampedBloom({ reveal }: { reveal: React.RefObject<RevealState> }) {
-  const bloom = useRef<{ intensity: number } | null>(null);
-  useFrame(() => {
-    if (!bloom.current || !reveal.current) return;
-    const target = reveal.current.lit ? 0.55 : 0.08;
-    bloom.current.intensity = reveal.current.instant
-      ? target
-      : THREE.MathUtils.lerp(bloom.current.intensity, target, 0.035);
-  });
-  return (
-    <Bloom
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ref={bloom as any}
-      mipmapBlur
-      intensity={0.08}
-      luminanceThreshold={1.0}
-      luminanceSmoothing={0.25}
-    />
-  );
-}
-
 /** Locked near-top-down camera with gentle clamped pointer parallax.
  *  Narrow (portrait) viewports re-aim at the candle and widen the fov so the
  *  switch stays in frame on phones. */
@@ -200,34 +156,17 @@ export function Desk3DScene({
     min: new URLSearchParams(q).get("min"),
     noenv: q.includes("noenv=1"),
     noshadow: q.includes("noshadow=1"),
-    nofx: q.includes("fx=0"),
-    nodof: q.includes("dof=0"),
     nocs: q.includes("nocs=1"),
     only: new URLSearchParams(q).get("only"), // slab | slabflame | objects
   };
 
-  // mutable reveal + focus state read per-frame by the effects (see RampedBloom)
+  // mutable reveal + focus state read per-frame by the scene (flame lean,
+  // hover focus, exposure reveal)
   const revealRef = useRef<RevealState>({ lit, instant, reduced });
   useEffect(() => {
     revealRef.current = { lit, instant, reduced };
   }, [lit, instant, reduced]);
   const focusRef = useRef<SceneFocus>({ hovered: false, point: FOCUS_HOME.clone() });
-
-  // the effect chain must keep a stable element identity across lit toggles
-  const composer = useMemo(
-    () => (
-      <EffectComposer>
-        {/* No SSAO pass: N8AO (half- AND full-res) smeared blocky ghost
-            rectangles across the desk. Contact shadows + the wood's baked AO
-            map + the flame's PCF shadows cover the crevice darkening. */}
-        <RampedBloom reveal={revealRef} />
-        {!flags.nodof ? <RackedDoF reveal={revealRef} focus={focusRef} /> : <></>}
-        <Vignette eskil={false} offset={0.18} darkness={0.78} />
-        <Noise premultiply opacity={0.055} />
-      </EffectComposer>
-    ),
-    [flags.nodof],
-  );
 
   return (
     <Canvas
@@ -283,7 +222,7 @@ export function Desk3DScene({
         <Candle />
       </group>
 
-      <DeskObject3D label="Writings" route="/writings" lit={lit} focus={focusRef} position={[-1.22, 0, 0.28]} rotation={[0, 0.14, 0]} captionOffset={[0, 0.05, 0.61]}>
+      <DeskObject3D label="Writings" route="/writings" lit={lit} focus={focusRef} position={[-1.0, 0, -0.05]} rotation={[0, 0.14, 0]} captionOffset={[0, 0.05, 0.61]}>
         <Notebook />
       </DeskObject3D>
 
@@ -308,15 +247,13 @@ export function Desk3DScene({
       <group position={[-1.05, 0, -0.45]}><Pens /></group>
       {/* the ethos card — propped above the MacBook, toward the candle */}
       <group position={[-0.88, 0, -1.02]} rotation={[0, 0.12, 0]}><EthosCard /></group>
-      <group position={[-1.72, 0, 0.8]}><Books /></group>
+      <group position={[-1.68, 0, 0.82]} rotation={[0, 0.25, 0]}><Books /></group>
 
       {!flags.nocs && (
         <ContactShadows position={[0, 0.002, 0]} opacity={0.72} scale={7} blur={1.9} far={1.1} resolution={1024} color="#120a04" />
       )}
         </>
       )}
-
-      {!flags.min && !flags.nofx && composer}
     </Canvas>
   );
 }
