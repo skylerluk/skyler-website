@@ -7,6 +7,37 @@ import * as THREE from "three";
  * PBR pipeline — not DOM/vector shapes in the scene).
  */
 
+/** Faint handwritten-looking ruled lines (no legible words) for the top sheet. */
+export function ruledNotesTexture(size = 512): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d")!;
+  g.clearRect(0, 0, size, size);
+  g.strokeStyle = "rgba(60,48,38,0.5)";
+  g.lineCap = "round";
+  const left = size * 0.16;
+  let y = size * 0.2;
+  while (y < size * 0.82) {
+    const len = size * (0.4 + Math.random() * 0.35);
+    g.lineWidth = 2.4;
+    g.beginPath();
+    let x = left;
+    g.moveTo(x, y + (Math.random() - 0.5) * 3);
+    // wavy scribble stroke standing in for a line of writing
+    const seg = 18;
+    for (let s = 1; s <= seg; s++) {
+      x = left + (len * s) / seg;
+      g.lineTo(x, y + Math.sin(s * 0.9 + y) * 2.4 + (Math.random() - 0.5) * 2);
+    }
+    g.stroke();
+    y += size * (0.07 + Math.random() * 0.03);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
 /** Pebbled leather grain as a grayscale bump map (used on the desk mat). */
 export function leatherBumpTexture(size = 512): THREE.CanvasTexture {
   const c = document.createElement("canvas");

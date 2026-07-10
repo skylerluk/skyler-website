@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox, Html } from "@react-three/drei";
 import { BrushedAluminum, LeatherMaterial, OakWood, PaperMaterial, WaxMaterial } from "./materials";
-import { appleLogoAlpha, bookCoverTexture, handwritingTexture, leatherBumpTexture, videoScreenTexture } from "./decals";
+import { appleLogoAlpha, bookCoverTexture, handwritingTexture, leatherBumpTexture, ruledNotesTexture, videoScreenTexture } from "./decals";
 
 /* ---------- interactive wrapper: raycast hover lift + route ---------- */
 
@@ -257,50 +257,95 @@ export function Phone() {
   );
 }
 
-/* ---------- manila folder ---------- */
+/* ---------- manila folder (Work & Ventures) ---------- */
 
 export function Folder() {
+  const label = useMemo(
+    () => handwritingTexture(["Work"], { bg: "#d8b878", ink: "#4a3320", width: 384, height: 160, fontFrac: 0.4 }),
+    [],
+  );
+  const manila = "#c9a463";
   return (
     <group>
-      <RoundedBox args={[1.05, 0.012, 0.78]} radius={0.006} castShadow receiveShadow position={[0, 0.012, 0]}>
-        <PaperMaterial tint="#b59464" roughness={0.95} />
+      {/* back cover */}
+      <RoundedBox args={[1.08, 0.01, 0.8]} radius={0.008} smoothness={3} castShadow receiveShadow position={[0, 0.006, 0]}>
+        <PaperMaterial tint={manila} roughness={0.92} />
       </RoundedBox>
-      {/* tab */}
-      <mesh castShadow position={[-0.32, 0.019, -0.365]}>
-        <boxGeometry args={[0.3, 0.008, 0.07]} />
-        <PaperMaterial tint="#b59464" roughness={0.95} />
+      {/* nested sheets — larger in z so a clean white lip protrudes at the near edge */}
+      <mesh castShadow receiveShadow position={[0.01, 0.014, 0.02]}>
+        <boxGeometry args={[1.02, 0.006, 0.86]} />
+        <PaperMaterial tint="#f0e8d4" />
       </mesh>
-      {/* sheets peeking out, slightly fanned */}
-      <mesh castShadow position={[0.035, 0.021, 0.03]} rotation={[0, 0.025, 0]}>
-        <boxGeometry args={[1.0, 0.005, 0.73]} />
-        <PaperMaterial tint="#e9dfc6" />
+      <mesh position={[0.03, 0.018, 0.03]}>
+        <boxGeometry args={[1.0, 0.004, 0.84]} />
+        <PaperMaterial tint="#f6efdd" />
       </mesh>
-      <mesh position={[0.05, 0.026, 0.045]} rotation={[0, -0.02, 0]}>
-        <boxGeometry args={[0.98, 0.003, 0.71]} />
-        <PaperMaterial tint="#efe6d2" />
-      </mesh>
-      {/* top cover, hinged open a few degrees at the spine */}
-      <RoundedBox args={[1.05, 0.012, 0.78]} radius={0.006} castShadow receiveShadow position={[0, 0.055, -0.015]} rotation={[0.11, 0, 0.004]}>
-        <PaperMaterial tint="#b59464" roughness={0.95} />
+      {/* top cover (closed), a hair smaller so the sheet lip shows all round */}
+      <RoundedBox args={[1.06, 0.011, 0.78]} radius={0.01} smoothness={3} castShadow receiveShadow position={[0, 0.026, 0]}>
+        <PaperMaterial tint={manila} roughness={0.92} />
       </RoundedBox>
+      {/* thin shadow gap where the cover meets the front sheet-lip → reads as depth */}
+      <mesh position={[0, 0.02, 0.41]}>
+        <boxGeometry args={[1.02, 0.01, 0.02]} />
+        <meshStandardMaterial color="#3a2a18" roughness={1} />
+      </mesh>
+      {/* folded spine along the back edge — what makes it a folder, not a card */}
+      <mesh castShadow position={[0, 0.02, -0.39]}>
+        <boxGeometry args={[1.06, 0.03, 0.03]} />
+        <PaperMaterial tint="#bd965a" roughness={0.92} />
+      </mesh>
+      {/* cut tab on the back edge with a legible label */}
+      <RoundedBox args={[0.36, 0.011, 0.09]} radius={0.01} smoothness={2} castShadow position={[-0.28, 0.026, -0.43]}>
+        <PaperMaterial tint={manila} roughness={0.92} />
+      </RoundedBox>
+      <mesh position={[-0.28, 0.0325, -0.43]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.3, 0.075]} />
+        <meshStandardMaterial map={label} transparent roughness={0.95} polygonOffset polygonOffsetFactor={-1} />
+      </mesh>
     </group>
   );
 }
 
-/* ---------- loose papers ---------- */
+/* ---------- a tidy weighted stack of notes (About Me) ---------- */
 
 export function Papers() {
+  const notes = useMemo(() => ruledNotesTexture(), []);
   return (
     <group>
-      <mesh receiveShadow castShadow rotation={[-Math.PI / 2, 0, 0.12]} position={[0, 0.004, 0]}>
-        <planeGeometry args={[0.58, 0.8]} />
-        <PaperMaterial tint="#e6dcc0" />
+      {/* a small neat stack — real thickness, sheets barely offset */}
+      {[0, 1, 2].map((i) => (
+        <RoundedBox
+          key={i}
+          args={[0.66, 0.006, 0.9]}
+          radius={0.004}
+          smoothness={2}
+          castShadow
+          receiveShadow
+          position={[i * 0.005, 0.003 + i * 0.006, i * 0.004]}
+          rotation={[0, (i - 1) * 0.012, 0]}
+        >
+          <PaperMaterial tint="#e7ddc6" roughness={0.98} />
+        </RoundedBox>
+      ))}
+      {/* top sheet, its far edge lifting in a gentle curl that catches a shadow */}
+      <mesh castShadow receiveShadow position={[0.014, 0.026, 0.01]} rotation={[-Math.PI / 2 + 0.09, 0.015, 0]}>
+        <planeGeometry args={[0.64, 0.88]} />
+        <PaperMaterial tint="#efe7d5" roughness={0.98} />
       </mesh>
-      {/* top sheet lifts at one edge — a slight curl that catches a shadow */}
-      <mesh receiveShadow castShadow rotation={[-Math.PI / 2 + 0.06, 0.01, -0.07]} position={[0.06, 0.018, -0.03]}>
-        <planeGeometry args={[0.58, 0.8]} />
-        <PaperMaterial tint="#ece2c9" />
+      {/* faint handwriting on the top sheet */}
+      <mesh position={[0.014, 0.03, 0.01]} rotation={[-Math.PI / 2 + 0.09, 0.015, 0]}>
+        <planeGeometry args={[0.6, 0.82]} />
+        <meshStandardMaterial map={notes} transparent roughness={1} polygonOffset polygonOffsetFactor={-1} />
       </mesh>
+      {/* silver paperclip on the top edge */}
+      <group position={[-0.13, 0.04, -0.33]} rotation={[0, 0.15, 0]}>
+        {[0.03, 0.019].map((r, k) => (
+          <mesh key={k} rotation={[Math.PI / 2, 0, 0]} scale={[1, 1.7, 1]} position={[0, 0, k * 0.006]}>
+            <torusGeometry args={[r, 0.004, 8, 24]} />
+            <meshStandardMaterial color="#c8ccd2" metalness={0.95} roughness={0.28} />
+          </mesh>
+        ))}
+      </group>
     </group>
   );
 }
