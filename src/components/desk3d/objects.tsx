@@ -88,7 +88,7 @@ export function DeskSlab() {
       {/* walnut top — top surface at y=0 where objects sit; front + side edges
           fall inside the frame so the desk reads as furniture, not an infinite floor */}
       <RoundedBox args={[5.3, 0.11, 3.7]} radius={0.018} smoothness={4} receiveShadow castShadow position={[0, -0.055, 0]}>
-        <OakWood repeat={[1.9, 1.32]} />
+        <OakWood repeat={[1, 1]} />
       </RoundedBox>
       {/* darker apron below, inset so the top overhangs and throws an edge shadow */}
       <mesh position={[0, -0.32, -0.05]} receiveShadow castShadow>

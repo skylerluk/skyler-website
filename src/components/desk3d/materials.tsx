@@ -30,18 +30,33 @@ function configure(
   return t;
 }
 
-/** Warm pale fine-grained oak — the desk.
- *  Procedurally generated (scripts/generate-wood.mjs): a single continuous
- *  grain that tiles seamlessly. The CC0 oak_veneer maps were a multi-board
- *  veneer whose planks tiled as pixelated tonal rectangles across the flat
- *  desk; no material tweak could hide that, so the texture itself is replaced.
- *  Diffuse-only, matte, low env reflection — nothing to mirror the HDRI. */
+/** Grand walnut — the desk. Procedurally generated flowing cathedral grain
+ *  (scripts/generate-wood.mjs) plus a subtle matching normal map, mapped as one
+ *  board across the whole desk (repeat [1,1]) so there is no tile seam. A faint
+ *  clearcoat lets candlelight sweep across the surface; env reflection stays
+ *  low so nothing mirrors the HDRI (that caused blocky rectangles before). */
 export function OakWood(props: { repeat?: [number, number] }) {
-  const [rx, ry] = props.repeat ?? [2.2, 1.4];
-  const [diff] = useTexture(["/assets/wood/procedural_oak.jpg"]);
-  useMemo(() => configure(diff, [rx, ry], "srgb"), [diff, rx, ry]);
+  const [rx, ry] = props.repeat ?? [1, 1];
+  const [diff, nor] = useTexture([
+    "/assets/wood/walnut_diff.jpg",
+    "/assets/wood/walnut_nor.jpg",
+  ]);
+  useMemo(() => {
+    configure(diff, [rx, ry], "srgb");
+    configure(nor, [rx, ry]);
+  }, [diff, nor, rx, ry]);
   return (
-    <meshStandardMaterial map={diff} color="#efe6d4" roughness={0.94} metalness={0} envMapIntensity={0.15} />
+    <meshPhysicalMaterial
+      map={diff}
+      color="#c7b49a"
+      normalMap={nor}
+      normalScale={new THREE.Vector2(0.22, 0.22)}
+      roughness={0.66}
+      metalness={0}
+      clearcoat={0.3}
+      clearcoatRoughness={0.62}
+      envMapIntensity={0.12}
+    />
   );
 }
 
