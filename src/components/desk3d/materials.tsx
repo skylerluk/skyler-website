@@ -117,6 +117,34 @@ export function PaperMaterial({
   );
 }
 
+/** Cognac leather — the desk mat. Pebbled bump + a faint clearcoat sheen so
+ *  candlelight grazes the grain; matte enough not to mirror the environment. */
+export function LeatherMaterial({
+  bump,
+  color = "#5f3a22",
+  repeat = [3, 2] as [number, number],
+}: {
+  bump: THREE.Texture;
+  color?: string;
+  repeat?: [number, number];
+}) {
+  useMemo(() => {
+    bump.repeat.set(...repeat);
+  }, [bump, repeat]);
+  return (
+    <meshPhysicalMaterial
+      color={color}
+      bumpMap={bump}
+      bumpScale={0.5}
+      roughness={0.62}
+      metalness={0}
+      clearcoat={0.22}
+      clearcoatRoughness={0.68}
+      envMapIntensity={0.14}
+    />
+  );
+}
+
 /** Candle wax — transmission + thickness fakes subsurface glow near the flame. */
 export function WaxMaterial() {
   // spike debug: ?nowax=1 downgrades to a plain material to isolate GPU crashes

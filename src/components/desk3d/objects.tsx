@@ -9,8 +9,8 @@ import * as THREE from "three";
 import { useRouter } from "next/navigation";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox, Html } from "@react-three/drei";
-import { BrushedAluminum, OakWood, PaperMaterial, WaxMaterial } from "./materials";
-import { appleLogoAlpha, bookCoverTexture, handwritingTexture, videoScreenTexture } from "./decals";
+import { BrushedAluminum, LeatherMaterial, OakWood, PaperMaterial, WaxMaterial } from "./materials";
+import { appleLogoAlpha, bookCoverTexture, handwritingTexture, leatherBumpTexture, videoScreenTexture } from "./decals";
 
 /* ---------- interactive wrapper: raycast hover lift + route ---------- */
 
@@ -100,6 +100,24 @@ export function DeskSlab() {
         <planeGeometry args={[40, 40]} />
         <meshStandardMaterial color="#0a0705" roughness={1} metalness={0} />
       </mesh>
+    </group>
+  );
+}
+
+/* ---------- leather desk mat: stages the interactive objects ---------- */
+
+export function DeskMat() {
+  const bump = useMemo(() => leatherBumpTexture(), []);
+  return (
+    <group position={[0.12, 0, -0.06]}>
+      {/* darker stitched border, slightly larger + lower → a thin edge line */}
+      <RoundedBox args={[3.66, 0.014, 2.16]} radius={0.03} smoothness={4} receiveShadow castShadow position={[0, 0.007, 0]}>
+        <LeatherMaterial bump={bump} color="#4a2c19" repeat={[3.2, 2]} />
+      </RoundedBox>
+      {/* main leather field, inset so the border reads as a welt */}
+      <RoundedBox args={[3.54, 0.016, 2.04]} radius={0.024} smoothness={4} receiveShadow position={[0, 0.011, 0]}>
+        <LeatherMaterial bump={bump} color="#603a22" repeat={[3, 1.9]} />
+      </RoundedBox>
     </group>
   );
 }

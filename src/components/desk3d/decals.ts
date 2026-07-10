@@ -7,6 +7,42 @@ import * as THREE from "three";
  * PBR pipeline — not DOM/vector shapes in the scene).
  */
 
+/** Pebbled leather grain as a grayscale bump map (used on the desk mat). */
+export function leatherBumpTexture(size = 512): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#808080";
+  g.fillRect(0, 0, size, size);
+  // scattered soft pebbles: light domes with dark creases between them
+  for (let i = 0; i < 2600; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const r = 3 + Math.random() * 7;
+    const light = Math.random() > 0.5;
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    const a = 0.12 + Math.random() * 0.12;
+    if (light) {
+      gr.addColorStop(0, `rgba(255,255,255,${a})`);
+      gr.addColorStop(1, "rgba(255,255,255,0)");
+    } else {
+      gr.addColorStop(0, `rgba(0,0,0,${a})`);
+      gr.addColorStop(1, "rgba(0,0,0,0)");
+    }
+    g.fillStyle = gr;
+    g.fillRect(0, 0, size, size);
+  }
+  // fine speckle for micro-grain
+  for (let i = 0; i < 9000; i++) {
+    g.fillStyle = `rgba(0,0,0,${Math.random() * 0.06})`;
+    g.fillRect(Math.random() * size, Math.random() * size, 1.4, 1.4);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 8;
+  return t;
+}
+
 export function appleLogoAlpha(size = 256): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = c.height = size;

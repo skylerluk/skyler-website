@@ -10,7 +10,7 @@ import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
 import { CandleFlame } from "./CandleFlame";
 import {
-  Books, Candle, DeskObject3D, DeskSlab, EthosCard, Folder, Macbook, Notebook, Papers, Pens, Phone,
+  Books, Candle, DeskMat, DeskObject3D, DeskSlab, EthosCard, Folder, Macbook, Notebook, Papers, Pens, Phone,
   type SceneFocus,
 } from "./objects";
 
@@ -211,6 +211,7 @@ export function Desk3DScene({
       <DustMotes reveal={revealRef} />
 
       <DeskSlab />
+      <DeskMat />
 
       {/* the candle is the switch */}
       <group
@@ -222,24 +223,25 @@ export function Desk3DScene({
         <Candle />
       </group>
 
-      <DeskObject3D label="Writings" route="/writings" lit={lit} focus={focusRef} position={[-1.0, 0, -0.05]} rotation={[0, 0.14, 0]} captionOffset={[0, 0.05, 0.61]}>
+      {/* the five interactive objects sit ON the leather mat (y ≈ mat surface) */}
+      <DeskObject3D label="Writings" route="/writings" lit={lit} focus={focusRef} position={[-1.0, 0.02, -0.05]} rotation={[0, 0.14, 0]} captionOffset={[0, 0.05, 0.61]}>
         <Notebook />
       </DeskObject3D>
 
-      <DeskObject3D label="Technical Builds" route="/builds" lit={lit} focus={focusRef} position={[0, 0, -0.5]} captionOffset={[0, 0.05, 0.58]}>
+      <DeskObject3D label="Technical Builds" route="/builds" lit={lit} focus={focusRef} position={[0, 0.02, -0.5]} captionOffset={[0, 0.05, 0.58]}>
         <Macbook />
       </DeskObject3D>
 
-      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} focus={focusRef} position={[0.32, 0, 0.55]} rotation={[0, -0.06, 0]} captionOffset={[0, 0.04, 0.52]}>
+      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} focus={focusRef} position={[0.32, 0.02, 0.55]} rotation={[0, -0.06, 0]} captionOffset={[0, 0.04, 0.52]}>
         <Folder />
       </DeskObject3D>
 
       {/* loose papers are the About Me object */}
-      <DeskObject3D label="About Me" route="/about" lit={lit} focus={focusRef} position={[1.32, 0, -0.85]} rotation={[0, -0.08, 0]} captionOffset={[0, 0.04, 0.53]}>
+      <DeskObject3D label="About Me" route="/about" lit={lit} focus={focusRef} position={[1.32, 0.02, -0.85]} rotation={[0, -0.08, 0]} captionOffset={[0, 0.04, 0.53]}>
         <Papers />
       </DeskObject3D>
 
-      <DeskObject3D label="Video" route="/video" lit={lit} focus={focusRef} position={[1.55, 0, 0.18]} captionOffset={[0, 0.02, 0.47]}>
+      <DeskObject3D label="Video" route="/video" lit={lit} focus={focusRef} position={[1.55, 0.02, 0.18]} captionOffset={[0, 0.02, 0.47]}>
         <Phone />
       </DeskObject3D>
 
