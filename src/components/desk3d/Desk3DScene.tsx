@@ -132,9 +132,9 @@ function CameraRig({ reduced }: { reduced: boolean }) {
       cam.updateProjectionMatrix();
     }
     camera.position.x = THREE.MathUtils.lerp(camera.position.x, (narrow ? -0.7 : 0) + px * 0.22, 0.04);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, 4.3 + py * 0.12, 0.04);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, 2.55, 0.04);
-    camera.lookAt(narrow ? -0.7 : 0, 0, -0.15);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, 5.35 + py * 0.14, 0.04);
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, 3.5, 0.04);
+    camera.lookAt(narrow ? -0.7 : 0, 0, -0.02);
   });
   return null;
 }
@@ -172,7 +172,7 @@ export function Desk3DScene({
     <Canvas
       shadows={flags.noshadow ? false : "soft"}
       dpr={[1, 1.75]}
-      camera={{ position: [0, 4.3, 2.55], fov: 34 }}
+      camera={{ position: [0, 5.35, 3.5], fov: 34 }}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 0.14 }}
       onCreated={({ scene }) => {
         scene.background = new THREE.Color("#0d0805");

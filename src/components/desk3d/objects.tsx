@@ -80,14 +80,27 @@ export function DeskObject3D({
   );
 }
 
-/* ---------- the desk slab ---------- */
+/* ---------- the desk: finite walnut top on a dark apron, in a dark room ---------- */
 
 export function DeskSlab() {
   return (
-    <mesh receiveShadow position={[0, -0.06, 0]}>
-      <boxGeometry args={[8.5, 0.12, 5.4]} />
-      <OakWood repeat={[3.1, 1.95]} />
-    </mesh>
+    <group>
+      {/* walnut top — top surface at y=0 where objects sit; front + side edges
+          fall inside the frame so the desk reads as furniture, not an infinite floor */}
+      <RoundedBox args={[5.3, 0.11, 3.7]} radius={0.018} smoothness={4} receiveShadow castShadow position={[0, -0.055, 0]}>
+        <OakWood repeat={[1.9, 1.32]} />
+      </RoundedBox>
+      {/* darker apron below, inset so the top overhangs and throws an edge shadow */}
+      <mesh position={[0, -0.32, -0.05]} receiveShadow castShadow>
+        <boxGeometry args={[4.9, 0.42, 3.3]} />
+        <meshStandardMaterial color="#160f09" roughness={0.92} metalness={0} />
+      </mesh>
+      {/* very dark floor far below, catching the faintest falloff */}
+      <mesh position={[0, -2.4, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[40, 40]} />
+        <meshStandardMaterial color="#0a0705" roughness={1} metalness={0} />
+      </mesh>
+    </group>
   );
 }
 
