@@ -369,9 +369,9 @@ function Book({
         <boxGeometry args={[w - 0.035, h - 0.024, d - 0.02]} />
         <PaperMaterial tint="#e3d8ba" repeat={[2, 0.3]} />
       </mesh>
-      {/* titled top board — reads from the camera */}
-      <mesh position={[0, h + 0.001, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
-        <planeGeometry args={[d * 0.98, w * 0.98]} />
+      {/* titled top board — title reads left-to-right (normal orientation) */}
+      <mesh position={[0, h + 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[w * 0.98, d * 0.98]} />
         <meshStandardMaterial map={cover} roughness={0.68} polygonOffset polygonOffsetFactor={-1} />
       </mesh>
     </group>
@@ -390,12 +390,13 @@ export function Books() {
   );
   return (
     <group>
-      {/* two separate books, a small gap between them so both titles read */}
-      <group rotation={[0, 0.06, 0]}>
-        <Book size={[0.62, 0.075, 0.44]} color="#4e3d29" cover={selfReliance} />
+      {/* two books laid square (normal orientation), one resting on the other,
+          offset so both titles read */}
+      <group position={[0, 0, 0]} rotation={[0, 0.05, 0]}>
+        <Book size={[0.6, 0.075, 0.46]} color="#4e3d29" cover={selfReliance} />
       </group>
-      <group position={[0.44, 0, 0.42]} rotation={[0, -0.4, 0]}>
-        <Book size={[0.56, 0.062, 0.4]} color="#5e2f24" cover={meditations} />
+      <group position={[0.07, 0.078, 0.5]} rotation={[0, -0.04, 0]}>
+        <Book size={[0.56, 0.062, 0.42]} color="#5e2f24" cover={meditations} />
       </group>
     </group>
   );

@@ -232,32 +232,32 @@ export function Desk3DScene({
         )}
       </group>
 
-      {/* the four interactive objects sit ON the leather mat, lifted a hair above
-          its surface so they read clearly and cast a small contact shadow */}
-      <DeskObject3D label="Writings" route="/writings" lit={lit} focus={focusRef} position={[-1.05, 0.03, 0.05]} rotation={[0, 0.14, 0]} captionOffset={[0, 0.05, 0.61]}>
+      {/* the four interactive objects sit ON the leather mat, raised clearly above
+          it (y ≈ 0.06) so they cast a grounding shadow and separate from the mat */}
+      <DeskObject3D label="Writings" route="/writings" lit={lit} focus={focusRef} position={[-1.05, 0.06, 0.05]} rotation={[0, 0.14, 0]} captionOffset={[0, 0.05, 0.61]}>
         <Notebook />
       </DeskObject3D>
 
-      <DeskObject3D label="Technical Builds" route="/builds" lit={lit} focus={focusRef} position={[0.1, 0.03, -0.38]} captionOffset={[0, 0.05, 0.58]}>
+      <DeskObject3D label="Technical Builds" route="/builds" lit={lit} focus={focusRef} position={[0.1, 0.06, -0.38]} captionOffset={[0, 0.05, 0.58]}>
         <Macbook />
       </DeskObject3D>
 
       {/* folder moved to the right, into the space freed by removing the phone */}
-      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} focus={focusRef} position={[1.34, 0.03, 0.12]} rotation={[0, -0.1, 0]} captionOffset={[0, 0.04, 0.52]}>
+      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} focus={focusRef} position={[1.34, 0.06, 0.12]} rotation={[0, -0.1, 0]} captionOffset={[0, 0.04, 0.52]}>
         <Folder />
       </DeskObject3D>
 
       {/* loose papers (About Me) moved to the well-lit centre-front where the folder was */}
-      <DeskObject3D label="About Me" route="/about" lit={lit} focus={focusRef} position={[0.18, 0.03, 0.55]} rotation={[0, -0.05, 0]} captionOffset={[0, 0.04, 0.53]}>
+      <DeskObject3D label="About Me" route="/about" lit={lit} focus={focusRef} position={[0.18, 0.06, 0.55]} rotation={[0, -0.05, 0]} captionOffset={[0, 0.04, 0.53]}>
         <Papers />
       </DeskObject3D>
 
       {/* ambiance (not clickable) */}
-      <group position={[-1.15, 0, -0.5]}><Pens /></group>
+      <group position={[-1.15, 0.06, -0.5]}><Pens /></group>
       {/* the ethos card — off the mat, on the walnut just behind (above) its back edge */}
       <group position={[0.1, 0, -1.4]} rotation={[0, 0.06, 0]}><EthosCard /></group>
-      {/* books — off the mat, on the walnut to its left */}
-      <group position={[-2.15, 0, 0.15]} rotation={[0, 0.32, 0]}><Books /></group>
+      {/* books — fully off the mat, square, on the walnut to its left */}
+      <group position={[-2.18, 0, -0.1]} rotation={[0, 0.1, 0]}><Books /></group>
 
       {!flags.nocs && (
         <ContactShadows position={[0, 0.002, 0]} opacity={0.72} scale={7} blur={1.9} far={1.1} resolution={1024} color="#120a04" />
