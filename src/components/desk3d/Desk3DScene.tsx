@@ -23,7 +23,7 @@ import {
 // overlays (see DeskHome3D). ACES tone mapping + the exposure reveal stay on
 // the renderer, not the composer.
 
-const FLAME_POS: [number, number, number] = [-1.7, 0.5, -0.75];
+const FLAME_POS: [number, number, number] = [-2.0, 0.5, -1.3];
 const FOCUS_HOME = new THREE.Vector3(0, 0.05, -0.1);
 
 type RevealState = { lit: boolean; instant: boolean; reduced: boolean };
@@ -215,9 +215,9 @@ export function Desk3DScene({
       <DeskSlab />
       <DeskMat />
 
-      {/* the candle is the switch */}
+      {/* the candle is the switch — fully off the mat, in the back-left corner */}
       <group
-        position={[-1.7, 0, -0.75]}
+        position={[-2.0, 0, -1.3]}
         onClick={(e) => { e.stopPropagation(); onCandleClick(); }}
         onPointerOver={() => (document.body.style.cursor = "pointer")}
         onPointerOut={() => (document.body.style.cursor = "auto")}
