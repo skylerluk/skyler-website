@@ -247,15 +247,15 @@ export function Desk3DScene({
         <Folder />
       </DeskObject3D>
 
-      {/* loose papers (About Me) moved to the well-lit centre-front where the folder was */}
-      <DeskObject3D label="About Me" route="/about" lit={lit} focus={focusRef} position={[0.18, 0.06, 0.55]} rotation={[0, -0.05, 0]} captionOffset={[0, 0.04, 0.53]}>
+      {/* loose papers (About Me) — dropped further down into the extended mat area */}
+      <DeskObject3D label="About Me" route="/about" lit={lit} focus={focusRef} position={[0.2, 0.06, 0.95]} rotation={[0, -0.05, 0]} captionOffset={[0, 0.04, 0.53]}>
         <Papers />
       </DeskObject3D>
 
       {/* ambiance (not clickable) */}
       <group position={[-1.15, 0.06, -0.5]}><Pens /></group>
-      {/* the ethos card — off the mat, on the walnut just behind (above) its back edge */}
-      <group position={[0.1, 0, -1.4]} rotation={[0, 0.06, 0]}><EthosCard /></group>
+      {/* the ethos card — off the mat, on the walnut behind it, over toward the candle */}
+      <group position={[-1.05, 0, -1.4]} rotation={[0, 0.16, 0]}><EthosCard /></group>
       {/* books — fully off the mat, square, on the walnut to its left */}
       <group position={[-2.18, 0, -0.1]} rotation={[0, 0.1, 0]}><Books /></group>
 

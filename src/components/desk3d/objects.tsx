@@ -108,15 +108,17 @@ export function DeskSlab() {
 
 export function DeskMat() {
   const bump = useMemo(() => leatherBumpTexture(), []);
+  // extended toward the desk front (larger z, shifted forward) so the objects
+  // aren't cramped; back edge stays put behind the objects near the candle
   return (
-    <group position={[0.12, 0, -0.06]}>
+    <group position={[0.12, 0, 0.18]}>
       {/* darker stitched border, slightly larger + lower → a thin edge line */}
-      <RoundedBox args={[3.66, 0.014, 2.16]} radius={0.03} smoothness={4} receiveShadow castShadow position={[0, 0.007, 0]}>
-        <LeatherMaterial bump={bump} color="#4a2c19" repeat={[3.2, 2]} />
+      <RoundedBox args={[3.66, 0.014, 2.64]} radius={0.03} smoothness={4} receiveShadow castShadow position={[0, 0.007, 0]}>
+        <LeatherMaterial bump={bump} color="#4a2c19" repeat={[3.2, 2.45]} />
       </RoundedBox>
       {/* main leather field, inset so the border reads as a welt */}
-      <RoundedBox args={[3.54, 0.016, 2.04]} radius={0.024} smoothness={4} receiveShadow position={[0, 0.011, 0]}>
-        <LeatherMaterial bump={bump} color="#603a22" repeat={[3, 1.9]} />
+      <RoundedBox args={[3.54, 0.016, 2.52]} radius={0.024} smoothness={4} receiveShadow position={[0, 0.011, 0]}>
+        <LeatherMaterial bump={bump} color="#603a22" repeat={[3, 2.34]} />
       </RoundedBox>
     </group>
   );
@@ -390,13 +392,13 @@ export function Books() {
   );
   return (
     <group>
-      {/* two books laid square (normal orientation), one resting on the other,
-          offset so both titles read */}
+      {/* two portrait hardcovers (taller than wide — normal book shape), one
+          resting on the other, offset so both titles read */}
       <group position={[0, 0, 0]} rotation={[0, 0.05, 0]}>
-        <Book size={[0.6, 0.075, 0.46]} color="#4e3d29" cover={selfReliance} />
+        <Book size={[0.52, 0.075, 0.74]} color="#4e3d29" cover={selfReliance} />
       </group>
-      <group position={[0.07, 0.078, 0.5]} rotation={[0, -0.04, 0]}>
-        <Book size={[0.56, 0.062, 0.42]} color="#5e2f24" cover={meditations} />
+      <group position={[0.06, 0.078, 0.4]} rotation={[0, -0.04, 0]}>
+        <Book size={[0.48, 0.062, 0.68]} color="#5e2f24" cover={meditations} />
       </group>
     </group>
   );

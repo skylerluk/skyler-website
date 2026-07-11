@@ -179,7 +179,7 @@ export function smokeTexture(w = 64, h = 256): THREE.CanvasTexture {
 export function bookCoverTexture(
   title: string,
   author: string,
-  { bg, ink = "#e8dcc2", w = 512, h = 384 }: { bg: string; ink?: string; w?: number; h?: number },
+  { bg, ink = "#e8dcc2", w = 420, h = 560 }: { bg: string; ink?: string; w?: number; h?: number },
 ): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = w;
@@ -214,20 +214,21 @@ export function bookCoverTexture(
   // rule + title + author, classic and legible
   g.strokeStyle = `${ink}cc`;
   g.lineWidth = 2;
-  g.strokeRect(w * 0.14, h * 0.2, w * 0.72, h * 0.6);
+  g.strokeRect(w * 0.14, h * 0.22, w * 0.72, h * 0.4);
   g.fillStyle = ink;
   g.textAlign = "center";
-  g.font = `600 ${Math.round(h * 0.13)}px Georgia, serif`;
-  const words = title.split(" ");
-  if (words.length > 1 && title.length > 12) {
-    g.fillText(words.slice(0, Math.ceil(words.length / 2)).join(" "), w / 2, h * 0.42);
-    g.fillText(words.slice(Math.ceil(words.length / 2)).join(" "), w / 2, h * 0.58);
-  } else {
-    g.fillText(title, w / 2, h * 0.48);
+  // title shrunk to fit inside the frame width (handles long single-word titles)
+  const maxTitleW = w * 0.62;
+  let fs = Math.round(h * 0.09);
+  g.font = `600 ${fs}px Georgia, serif`;
+  while (g.measureText(title).width > maxTitleW && fs > 12) {
+    fs -= 2;
+    g.font = `600 ${fs}px Georgia, serif`;
   }
-  g.font = `${Math.round(h * 0.07)}px Georgia, serif`;
+  g.fillText(title, w / 2, h * 0.36);
+  g.font = `${Math.round(h * 0.045)}px Georgia, serif`;
   g.fillStyle = `${ink}b0`;
-  g.fillText(author.toUpperCase(), w / 2, h * 0.72);
+  g.fillText(author.toUpperCase(), w / 2, h * 0.52);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 8;
