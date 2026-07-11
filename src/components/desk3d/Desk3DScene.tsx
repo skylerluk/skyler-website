@@ -203,8 +203,9 @@ export function Desk3DScene({
       ) : (
         <>
       {!flags.noenv && <Environment files="/assets/hdri/artist_workshop_1k.hdr" environmentIntensity={0.05} />}
-      {/* fill: cool sky over warm ground — warm key light, subtly cool shadows */}
-      <hemisphereLight args={["#3d4654", "#211710", 0.32]} />
+      {/* fill: cool sky over warm ground — warm key (the candle), subtly cool
+          shadows. Lifted just enough that the far side of the desk keeps form. */}
+      <hemisphereLight args={["#41505f", "#2a1c10", 0.46]} />
       <LightReveal lit={lit} instant={instant} />
       <CameraRig reduced={reduced} />
       <CandleFlame position={FLAME_POS} lit={lit} instant={instant} reduced={reduced} focus={focusRef} />
