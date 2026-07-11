@@ -7,10 +7,10 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { ContactShadows, Environment } from "@react-three/drei";
+import { ContactShadows, Environment, Html } from "@react-three/drei";
 import { CandleFlame } from "./CandleFlame";
 import {
-  Books, Candle, DeskObject3D, DeskSlab, EthosCard, Folder, Macbook, Notebook, Papers, Pens, Phone,
+  Books, Candle, DeskMat, DeskObject3D, DeskSlab, EthosCard, Folder, Macbook, Notebook, Papers, Pens,
   type SceneFocus,
 } from "./objects";
 
@@ -23,7 +23,7 @@ import {
 // overlays (see DeskHome3D). ACES tone mapping + the exposure reveal stay on
 // the renderer, not the composer.
 
-const FLAME_POS: [number, number, number] = [-1.7, 0.5, -0.75];
+const FLAME_POS: [number, number, number] = [-2.0, 0.5, -1.3];
 const FOCUS_HOME = new THREE.Vector3(0, 0.05, -0.1);
 
 type RevealState = { lit: boolean; instant: boolean; reduced: boolean };
@@ -39,8 +39,9 @@ function LightReveal({ lit, instant }: { lit: boolean; instant: boolean }) {
   const { gl, scene } = useThree();
   const done = useRef(false);
   useFrame(() => {
-    const targetExp = lit ? 1.05 : 0.3;
-    const targetEnv = lit ? 0.55 : 0.06;
+    // dim intro lifted from near-black so the candle + desk read while finding the switch
+    const targetExp = lit ? 1.05 : 0.5;
+    const targetEnv = lit ? 0.55 : 0.12;
     if (instant && !done.current) {
       gl.toneMappingExposure = targetExp;
       scene.environmentIntensity = targetEnv;
@@ -132,9 +133,9 @@ function CameraRig({ reduced }: { reduced: boolean }) {
       cam.updateProjectionMatrix();
     }
     camera.position.x = THREE.MathUtils.lerp(camera.position.x, (narrow ? -0.7 : 0) + px * 0.22, 0.04);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, 4.3 + py * 0.12, 0.04);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, 2.55, 0.04);
-    camera.lookAt(narrow ? -0.7 : 0, 0, -0.15);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, 5.35 + py * 0.14, 0.04);
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, 3.5, 0.04);
+    camera.lookAt(narrow ? -0.7 : 0, 0, -0.02);
   });
   return null;
 }
@@ -172,7 +173,7 @@ export function Desk3DScene({
     <Canvas
       shadows={flags.noshadow ? false : "soft"}
       dpr={[1, 1.75]}
-      camera={{ position: [0, 4.3, 2.55], fov: 34 }}
+      camera={{ position: [0, 5.35, 3.5], fov: 34 }}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 0.14 }}
       onCreated={({ scene }) => {
         scene.background = new THREE.Color("#0d0805");
@@ -203,51 +204,60 @@ export function Desk3DScene({
       ) : (
         <>
       {!flags.noenv && <Environment files="/assets/hdri/artist_workshop_1k.hdr" environmentIntensity={0.05} />}
-      {/* fill: cool sky over warm ground — warm key light, subtly cool shadows */}
-      <hemisphereLight args={["#3d4654", "#211710", 0.32]} />
+      {/* fill: cool sky over warm ground — warm key (the candle), subtly cool
+          shadows. Lifted just enough that the far side of the desk keeps form. */}
+      <hemisphereLight args={["#41505f", "#2a1c10", 0.46]} />
       <LightReveal lit={lit} instant={instant} />
       <CameraRig reduced={reduced} />
       <CandleFlame position={FLAME_POS} lit={lit} instant={instant} reduced={reduced} focus={focusRef} />
       <DustMotes reveal={revealRef} />
 
       <DeskSlab />
+      <DeskMat />
 
-      {/* the candle is the switch */}
+      {/* the candle is the switch — fully off the mat, in the back-left corner */}
       <group
-        position={[-1.7, 0, -0.75]}
+        position={[-2.0, 0, -1.3]}
         onClick={(e) => { e.stopPropagation(); onCandleClick(); }}
         onPointerOver={() => (document.body.style.cursor = "pointer")}
         onPointerOut={() => (document.body.style.cursor = "auto")}
       >
         <Candle />
+        {/* prompt anchored directly under the candle so it's centred on it at any
+            window size — shown only before the candle is lit */}
+        {!lit && (
+          <Html center position={[0, 0.02, 0.55]} zIndexRange={[15, 0]} style={{ pointerEvents: "none" }}>
+            <span className="caption whitespace-nowrap" style={{ opacity: 0.85 }}>light the candle</span>
+          </Html>
+        )}
       </group>
 
-      <DeskObject3D label="Writings" route="/writings" lit={lit} focus={focusRef} position={[-1.0, 0, -0.05]} rotation={[0, 0.14, 0]} captionOffset={[0, 0.05, 0.61]}>
+      {/* the four interactive objects sit ON the leather mat, raised clearly above
+          it (y ≈ 0.06) so they cast a grounding shadow and separate from the mat */}
+      <DeskObject3D label="Writings" route="/writings" lit={lit} focus={focusRef} position={[-1.05, 0.06, 0.05]} rotation={[0, 0.14, 0]} captionOffset={[0, 0.05, 0.61]}>
         <Notebook />
       </DeskObject3D>
 
-      <DeskObject3D label="Technical Builds" route="/builds" lit={lit} focus={focusRef} position={[0, 0, -0.5]} captionOffset={[0, 0.05, 0.58]}>
+      <DeskObject3D label="Technical Builds" route="/builds" lit={lit} focus={focusRef} position={[0.1, 0.06, -0.38]} captionOffset={[0, 0.05, 0.58]}>
         <Macbook />
       </DeskObject3D>
 
-      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} focus={focusRef} position={[0.32, 0, 0.55]} rotation={[0, -0.06, 0]} captionOffset={[0, 0.04, 0.52]}>
+      {/* folder moved to the right, into the space freed by removing the phone */}
+      <DeskObject3D label="Work & Ventures" route="/work" lit={lit} focus={focusRef} position={[1.34, 0.06, 0.12]} rotation={[0, -0.1, 0]} captionOffset={[0, 0.04, 0.52]}>
         <Folder />
       </DeskObject3D>
 
-      {/* loose papers are the About Me object */}
-      <DeskObject3D label="About Me" route="/about" lit={lit} focus={focusRef} position={[1.32, 0, -0.85]} rotation={[0, -0.08, 0]} captionOffset={[0, 0.04, 0.53]}>
+      {/* loose papers (About Me) — dropped further down into the extended mat area */}
+      <DeskObject3D label="About Me" route="/about" lit={lit} focus={focusRef} position={[0.2, 0.06, 0.95]} rotation={[0, -0.05, 0]} captionOffset={[0, 0.04, 0.53]}>
         <Papers />
       </DeskObject3D>
 
-      <DeskObject3D label="Video" route="/video" lit={lit} focus={focusRef} position={[1.55, 0, 0.18]} captionOffset={[0, 0.02, 0.47]}>
-        <Phone />
-      </DeskObject3D>
-
       {/* ambiance (not clickable) */}
-      <group position={[-1.05, 0, -0.45]}><Pens /></group>
-      {/* the ethos card — propped above the MacBook, toward the candle */}
-      <group position={[-0.88, 0, -1.02]} rotation={[0, 0.12, 0]}><EthosCard /></group>
-      <group position={[-1.68, 0, 0.82]} rotation={[0, 0.25, 0]}><Books /></group>
+      <group position={[-1.15, 0.06, -0.5]}><Pens /></group>
+      {/* the ethos card — off the mat, on the walnut behind it, over toward the candle */}
+      <group position={[-1.05, 0, -1.4]} rotation={[0, 0.16, 0]}><EthosCard /></group>
+      {/* books — fully off the mat, square, on the walnut to its left */}
+      <group position={[-2.18, 0, -0.1]} rotation={[0, 0.1, 0]}><Books /></group>
 
       {!flags.nocs && (
         <ContactShadows position={[0, 0.002, 0]} opacity={0.72} scale={7} blur={1.9} far={1.1} resolution={1024} color="#120a04" />

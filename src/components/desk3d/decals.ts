@@ -7,6 +7,73 @@ import * as THREE from "three";
  * PBR pipeline — not DOM/vector shapes in the scene).
  */
 
+/** Faint handwritten-looking ruled lines (no legible words) for the top sheet. */
+export function ruledNotesTexture(size = 512): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d")!;
+  g.clearRect(0, 0, size, size);
+  g.strokeStyle = "rgba(60,48,38,0.5)";
+  g.lineCap = "round";
+  const left = size * 0.16;
+  let y = size * 0.2;
+  while (y < size * 0.82) {
+    const len = size * (0.4 + Math.random() * 0.35);
+    g.lineWidth = 2.4;
+    g.beginPath();
+    let x = left;
+    g.moveTo(x, y + (Math.random() - 0.5) * 3);
+    // wavy scribble stroke standing in for a line of writing
+    const seg = 18;
+    for (let s = 1; s <= seg; s++) {
+      x = left + (len * s) / seg;
+      g.lineTo(x, y + Math.sin(s * 0.9 + y) * 2.4 + (Math.random() - 0.5) * 2);
+    }
+    g.stroke();
+    y += size * (0.07 + Math.random() * 0.03);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
+/** Pebbled leather grain as a grayscale bump map (used on the desk mat). */
+export function leatherBumpTexture(size = 512): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#808080";
+  g.fillRect(0, 0, size, size);
+  // scattered soft pebbles: light domes with dark creases between them
+  for (let i = 0; i < 2600; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const r = 3 + Math.random() * 7;
+    const light = Math.random() > 0.5;
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    const a = 0.12 + Math.random() * 0.12;
+    if (light) {
+      gr.addColorStop(0, `rgba(255,255,255,${a})`);
+      gr.addColorStop(1, "rgba(255,255,255,0)");
+    } else {
+      gr.addColorStop(0, `rgba(0,0,0,${a})`);
+      gr.addColorStop(1, "rgba(0,0,0,0)");
+    }
+    g.fillStyle = gr;
+    g.fillRect(0, 0, size, size);
+  }
+  // fine speckle for micro-grain
+  for (let i = 0; i < 9000; i++) {
+    g.fillStyle = `rgba(0,0,0,${Math.random() * 0.06})`;
+    g.fillRect(Math.random() * size, Math.random() * size, 1.4, 1.4);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 8;
+  return t;
+}
+
 export function appleLogoAlpha(size = 256): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = c.height = size;
@@ -112,7 +179,7 @@ export function smokeTexture(w = 64, h = 256): THREE.CanvasTexture {
 export function bookCoverTexture(
   title: string,
   author: string,
-  { bg, ink = "#e8dcc2", w = 512, h = 384 }: { bg: string; ink?: string; w?: number; h?: number },
+  { bg, ink = "#e8dcc2", w = 420, h = 560 }: { bg: string; ink?: string; w?: number; h?: number },
 ): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = w;
@@ -147,20 +214,21 @@ export function bookCoverTexture(
   // rule + title + author, classic and legible
   g.strokeStyle = `${ink}cc`;
   g.lineWidth = 2;
-  g.strokeRect(w * 0.14, h * 0.2, w * 0.72, h * 0.6);
+  g.strokeRect(w * 0.14, h * 0.22, w * 0.72, h * 0.4);
   g.fillStyle = ink;
   g.textAlign = "center";
-  g.font = `600 ${Math.round(h * 0.13)}px Georgia, serif`;
-  const words = title.split(" ");
-  if (words.length > 1 && title.length > 12) {
-    g.fillText(words.slice(0, Math.ceil(words.length / 2)).join(" "), w / 2, h * 0.42);
-    g.fillText(words.slice(Math.ceil(words.length / 2)).join(" "), w / 2, h * 0.58);
-  } else {
-    g.fillText(title, w / 2, h * 0.48);
+  // title shrunk to fit inside the frame width (handles long single-word titles)
+  const maxTitleW = w * 0.62;
+  let fs = Math.round(h * 0.09);
+  g.font = `600 ${fs}px Georgia, serif`;
+  while (g.measureText(title).width > maxTitleW && fs > 12) {
+    fs -= 2;
+    g.font = `600 ${fs}px Georgia, serif`;
   }
-  g.font = `${Math.round(h * 0.07)}px Georgia, serif`;
+  g.fillText(title, w / 2, h * 0.36);
+  g.font = `${Math.round(h * 0.045)}px Georgia, serif`;
   g.fillStyle = `${ink}b0`;
-  g.fillText(author.toUpperCase(), w / 2, h * 0.72);
+  g.fillText(author.toUpperCase(), w / 2, h * 0.52);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 8;

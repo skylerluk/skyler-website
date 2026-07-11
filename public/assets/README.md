@@ -3,7 +3,9 @@
 All assets here are CC0:
 
 - `hdri/artist_workshop_1k.hdr` — Poly Haven (polyhaven.com/a/artist_workshop)
-- `wood/oak_*.jpg` — Poly Haven "Oak Veneer 01" (polyhaven.com/a/oak_veneer_01)
+- `wood/walnut_diff.jpg` + `wood/walnut_nor.jpg` — procedurally generated cathedral
+  walnut (diffuse + normal), `scripts/generate-wood.mjs`. Domain-warped fBm; one
+  board across the whole desk (repeat [1,1]), no tile seam. Not a photo asset.
 - `metal/Metal009_*.jpg` — ambientCG "Metal 009" brushed metal (ambientcg.com/view?id=Metal009)
 - `paper/Paper001_*.jpg` — ambientCG "Paper 001" (ambientcg.com/view?id=Paper001)
 - `models/binder_notebook/` — Poly Haven "Binder Notebook" (polyhaven.com/a/binder_notebook)
