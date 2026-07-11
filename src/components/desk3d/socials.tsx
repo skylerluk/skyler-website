@@ -47,6 +47,7 @@ export function SocialButton3D({
   glyphSvg,
   glossy = false,
   reduced = false,
+  size = 1,
   position,
   rotation = [0, 0, 0],
 }: {
@@ -56,12 +57,20 @@ export function SocialButton3D({
   glyphSvg: string;
   glossy?: boolean;
   reduced?: boolean;
+  size?: number;
   position: [number, number, number];
   rotation?: [number, number, number];
 }) {
   const group = useRef<THREE.Group>(null);
   const [hover, setHover] = useState(false);
-  const glyph = useGlyphGeometry(glyphSvg, 0.17, 0.022);
+
+  // scale every dimension by `size`, keeping the body resting on the desk top
+  const DESK_TOP = 0.055;
+  const bodyW = 0.4 * size;
+  const bodyH = 0.11 * size;
+  const bodyCenterY = DESK_TOP + bodyH / 2;
+  const topFaceY = DESK_TOP + bodyH;
+  const glyph = useGlyphGeometry(glyphSvg, 0.17 * size, 0.022 * size);
 
   useFrame(() => {
     if (!group.current) return;
@@ -85,22 +94,22 @@ export function SocialButton3D({
     >
       {/* soft rounded-square body — matte satin metal, GitHub black / LinkedIn blue */}
       <RoundedBox
-        args={[0.4, 0.11, 0.4]}
-        radius={0.05}
+        args={[bodyW, bodyH, bodyW]}
+        radius={0.05 * size}
         smoothness={8}
         castShadow
         receiveShadow
-        position={[0, 0.11, 0]}
+        position={[0, bodyCenterY, 0]}
       >
         <SatinMetal tint={bodyTint} glossy={glossy} />
       </RoundedBox>
       {/* the mark, extruded into relief on the top face (white, low-ish roughness) */}
-      <mesh geometry={glyph} position={[0, 0.165, 0]} rotation={[-Math.PI / 2, 0, 0]} castShadow>
+      <mesh geometry={glyph} position={[0, topFaceY, 0]} rotation={[-Math.PI / 2, 0, 0]} castShadow>
         <meshPhysicalMaterial color="#f4f2ee" roughness={0.34} metalness={0} clearcoat={0.2} clearcoatRoughness={0.5} side={THREE.DoubleSide} />
       </mesh>
       <Html
         center
-        position={[0, 0.14, 0.42]}
+        position={[0, topFaceY + 0.03, 0.42 * size]}
         zIndexRange={[15, 0]}
         wrapperClass="hidden md:block"
         style={{ pointerEvents: "none", opacity: hover ? 1 : 0, transition: "opacity .35s" }}

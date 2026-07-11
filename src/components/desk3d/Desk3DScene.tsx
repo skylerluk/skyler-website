@@ -272,8 +272,9 @@ export function Desk3DScene({
             bodyTint="#0e0e0f"
             glyphSvg={githubMarkSvg}
             reduced={reduced}
-            position={[1.98, 0, -0.62]}
-            rotation={[0, -0.52, 0]}
+            size={0.7}
+            position={[1.42, 0, -1.42]}
+            rotation={[0, 0, 0]}
           />
           <SocialButton3D
             href="https://www.linkedin.com/in/skylerluk/"
@@ -282,8 +283,9 @@ export function Desk3DScene({
             glyphSvg={linkedinMarkSvg}
             glossy
             reduced={reduced}
-            position={[2.32, 0, -0.36]}
-            rotation={[0, -0.52, 0]}
+            size={0.7}
+            position={[1.82, 0, -1.42]}
+            rotation={[0, 0, 0]}
           />
         </>
       )}
