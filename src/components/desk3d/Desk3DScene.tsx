@@ -42,8 +42,8 @@ function LightReveal({ lit, instant }: { lit: boolean; instant: boolean }) {
   const done = useRef(false);
   useFrame(() => {
     // dim intro lifted from near-black so the candle + desk read while finding the switch
-    const targetExp = lit ? 1.05 : 0.5;
-    const targetEnv = lit ? 0.55 : 0.12;
+    const targetExp = lit ? 1.18 : 0.5;
+    const targetEnv = lit ? 0.85 : 0.12;
     if (instant && !done.current) {
       gl.toneMappingExposure = targetExp;
       scene.environmentIntensity = targetEnv;
@@ -208,7 +208,7 @@ export function Desk3DScene({
       {!flags.noenv && <Environment files="/assets/hdri/artist_workshop_1k.hdr" environmentIntensity={0.05} />}
       {/* fill: cool sky over warm ground — warm key (the candle), subtly cool
           shadows. Lifted just enough that the far side of the desk keeps form. */}
-      <hemisphereLight args={["#41505f", "#2a1c10", 0.46]} />
+      <hemisphereLight args={["#41505f", "#2a1c10", 0.72]} />
       <LightReveal lit={lit} instant={instant} />
       <CameraRig reduced={reduced} />
       <CandleFlame position={FLAME_POS} lit={lit} instant={instant} reduced={reduced} focus={focusRef} />
