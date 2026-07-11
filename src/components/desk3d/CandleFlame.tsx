@@ -105,7 +105,7 @@ export function CandleFlame({
   instant = false,
   reduced = false,
   focus,
-  intensity = 38,
+  intensity = 76,
 }: {
   position: [number, number, number];
   lit: boolean;
@@ -205,7 +205,7 @@ export function CandleFlame({
         color="#ffb066"
         intensity={0}
         distance={0}
-        decay={1.3}
+        decay={1.05}
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0015}
