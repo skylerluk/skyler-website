@@ -9,8 +9,10 @@ const blurbs: Record<string, string> = {
   laptop: "Things I've shipped — the MacBook.",
   folder: "Ventures and roles — the manila folder.",
   "postit-about": "Who I am — the loose papers.",
-  phone: "@skysaidso — the propped phone.",
 };
+
+// the phone/Video object was removed from the desk; keep it out of the mobile stack too
+const HIDDEN = new Set(["phone"]);
 
 /** Warm vertical stack for small screens — same objects, comfortably tappable. */
 export function MobileDeskList({ instant }: { instant: boolean }) {
@@ -27,7 +29,7 @@ export function MobileDeskList({ instant }: { instant: boolean }) {
       }}
     >
       <ul className="mx-auto flex max-w-sm flex-col gap-4">
-        {clickableObjects.map((o, i) => (
+        {clickableObjects.filter((o) => !HIDDEN.has(o.id)).map((o, i) => (
           <motion.li
             key={o.id}
             initial={instant ? false : { opacity: 0, y: 14 }}

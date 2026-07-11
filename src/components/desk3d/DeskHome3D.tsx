@@ -107,19 +107,7 @@ export function DeskHome3D() {
         className="absolute left-[6%] top-[18%] z-30 h-[26%] w-[13%] cursor-pointer rounded-xl opacity-0 focus-visible:opacity-100 max-md:opacity-0"
       />
 
-      <AnimatePresence>
-        {!lit && (
-          <motion.span
-            className="caption pointer-events-none absolute left-[12%] top-[52%] z-20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.85 }}
-            exit={{ opacity: 0, transition: { duration: 0.6 } }}
-            transition={{ duration: 1.2, delay: 0.8 }}
-          >
-            light the candle
-          </motion.span>
-        )}
-      </AnimatePresence>
+      {/* "light the candle" now lives in the 3D scene, anchored under the candle */}
 
       <AnimatePresence>
         {!lit && (
@@ -162,7 +150,6 @@ export function DeskHome3D() {
             ["Technical Builds", "/builds"],
             ["Work & Ventures", "/work"],
             ["About Me", "/about"],
-            ["Video", "/video"],
           ].map(([label, href]) => (
             <a
               key={href}

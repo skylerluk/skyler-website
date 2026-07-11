@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox, Html } from "@react-three/drei";
 import { BrushedAluminum, LeatherMaterial, OakWood, PaperMaterial, WaxMaterial } from "./materials";
-import { appleLogoAlpha, bookCoverTexture, handwritingTexture, leatherBumpTexture, ruledNotesTexture, videoScreenTexture } from "./decals";
+import { appleLogoAlpha, bookCoverTexture, handwritingTexture, leatherBumpTexture, ruledNotesTexture } from "./decals";
 
 /* ---------- interactive wrapper: raycast hover lift + route ---------- */
 
@@ -219,40 +219,6 @@ export function Notebook() {
         <boxGeometry args={[0.022, 0.072, 0.962]} />
         <meshStandardMaterial color="#221b15" roughness={0.9} envMapIntensity={0.3} />
       </mesh>
-    </group>
-  );
-}
-
-/* ---------- phone, propped ---------- */
-
-export function Phone() {
-  const screen = useMemo(() => videoScreenTexture(), []);
-  return (
-    <group rotation={[0, 0.16, 0]}>
-      {/* leaning back ~25°, propped from BEHIND (kickstand faces away from camera) */}
-      <group position={[0, 0.15, 0]} rotation={[-0.44, 0, 0]}>
-        <RoundedBox args={[0.34, 0.7, 0.024]} radius={0.014} smoothness={4} castShadow>
-          <meshPhysicalMaterial color="#14100c" metalness={0.4} roughness={0.32} clearcoat={0.9} clearcoatRoughness={0.12} />
-        </RoundedBox>
-        {/* lit screen: paused video with a play glyph */}
-        <mesh position={[0, 0, 0.0135]}>
-          <planeGeometry args={[0.315, 0.665]} />
-          <meshPhysicalMaterial
-            map={screen}
-            emissiveMap={screen}
-            emissive="#ffffff"
-            emissiveIntensity={0.85}
-            roughness={0.12}
-            clearcoat={1}
-            clearcoatRoughness={0.08}
-          />
-        </mesh>
-        {/* kickstand: hinged off the back, angled down to the desk */}
-        <mesh castShadow position={[0, -0.1, -0.055]} rotation={[0.75, 0, 0]}>
-          <boxGeometry args={[0.14, 0.3, 0.01]} />
-          <meshStandardMaterial color="#1c1712" roughness={0.65} metalness={0.3} />
-        </mesh>
-      </group>
     </group>
   );
 }
