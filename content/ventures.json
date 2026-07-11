@@ -2,17 +2,17 @@
   {
     "id": "bsg",
     "name": "Berkeley Strategy Group",
-    "role": "VP of Partnerships",
+    "role": "Chief of Operations & Co-Founder",
     "years": "2024–present",
-    "description": "Student-run strategy consulting group at UC Berkeley.",
+    "description": "A consulting organization that has achieved multiple six figures in revenue.",
     "link": ""
   },
   {
     "id": "avmc",
-    "name": "Anthology Vision Management",
-    "role": "Founder / Consultant",
+    "name": "Anthology Corporation (AVMC)",
+    "role": "Co-Founder",
     "years": "2025–present",
-    "description": "Consultancy venture.",
+    "description": "Venture Studio.",
     "link": "https://anthologyvm.com"
   },
   {
@@ -26,33 +26,25 @@
   {
     "id": "tradematch",
     "name": "Tradematch",
-    "role": "Founder",
+    "role": "Co-Founder",
     "years": "2024",
     "description": "Solo startup addressing underemployment in the trades.",
     "link": ""
   },
   {
-    "id": "centerpiece",
-    "name": "Centerpiece",
-    "role": "Founder",
-    "years": "2024",
-    "description": "AI career-discovery tool for high schoolers (BMOE pitch).",
-    "link": ""
-  },
-  {
     "id": "spc",
-    "name": "SPC (ISPMA @ Berkeley)",
-    "role": "President",
+    "name": "Software Product at Cal",
+    "role": "President · Head of Consulting · Project Manager · VP Internal",
     "years": "2024–2025",
-    "description": "Product management club at UC Berkeley.",
-    "link": ""
+    "description": "Student software product organization at UC Berkeley.",
+    "link": "https://www.spcberkeley.org/"
   },
   {
     "id": "hbsa",
-    "name": "HBSA",
+    "name": "Haas Business Student Association (HBSA)",
     "role": "Corporate Relations",
     "years": "2024–2025",
-    "description": "Haas Business Student Association.",
+    "description": "Organized and led 10+ professional events, created business opportunities for 1K+ students.",
     "link": ""
   }
 ]

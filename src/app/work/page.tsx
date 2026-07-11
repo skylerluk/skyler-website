@@ -13,9 +13,7 @@ export default function WorkPage() {
   return (
     <SectionShell title="Work & Ventures">
       <p className="text-cream/70">
-        Inside the manila folder: what I&apos;ve worked on and where I&apos;ve
-        led — consulting taught me how deals and teams actually work; building
-        taught me what I want to make.
+        What I&apos;ve worked on and where I&apos;ve led.
       </p>
 
       <ol className="mt-12 space-y-0 border-l border-cream/12">
