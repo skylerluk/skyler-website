@@ -56,21 +56,11 @@ export function DeskHome3D() {
 
   return (
     <div className="film-grain relative h-dvh w-full overflow-hidden bg-night">
-      {/* Poster only while the 3D bundle loads AND only when the desk is meant
-          to be lit (returning visitor). The dark intro must stay near-black —
-          bg-night matches the 3D scene background, so no poster is needed and
-          we never flash the (lit) desk before "light the candle". */}
-      {!ready && lit && (
-        // eslint-disable-next-line @next/next/no-img-element -- full-bleed poster; optimized jpg
-        <img
-          src="/og.jpg"
-          alt=""
-          aria-hidden
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{ filter: "brightness(0.85) saturate(0.95)" }}
-        />
-      )}
-
+      {/* No poster image: on a returning/back-nav visit `lit` is restored and
+          the 3D chunk is already cached, so the canvas mounts within a frame.
+          The near-black bg-night matches the scene background and bridges that
+          brief gap — showing a static desk image here instead only flashed a
+          stale render over the live scene. */}
       {mode === "3d" && (
         <div
           className={`absolute inset-0 transition-opacity duration-700 ${ready ? "opacity-100" : "opacity-0"} ${lit ? "max-md:pointer-events-none" : ""}`}
