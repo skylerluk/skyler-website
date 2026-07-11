@@ -159,6 +159,21 @@ export function DeskHome3D() {
               {label}
             </a>
           ))}
+          {[
+            ["GitHub", "https://github.com/skylerluk"],
+            ["LinkedIn", "https://www.linkedin.com/in/skylerluk/"],
+          ].map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${label} — opens in a new tab`}
+              className="caption block -translate-x-[200%] rounded px-2 py-1 focus-visible:translate-x-0"
+            >
+              {label}
+            </a>
+          ))}
         </nav>
       )}
 

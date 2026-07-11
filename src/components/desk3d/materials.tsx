@@ -86,6 +86,42 @@ export function BrushedAluminum({ tint = "#cfc8bd" }: { tint?: string }) {
   );
 }
 
+/** Satin machined finish for the social buttons — the MacBook's brushed
+ *  aluminium surface (same color + micro-sheen normal map) taken matte: high
+ *  roughness so it reads as a soft-touch anodized body, plus a whisper of
+ *  clearcoat for "a bit of shine" (not a mirror). `glossy` gives LinkedIn a
+ *  touch more sheen than GitHub. envMapIntensity stays low so it never mirrors
+ *  the HDRI. */
+export function SatinMetal({
+  tint = "#0e0e0f",
+  glossy = false,
+}: {
+  tint?: string;
+  glossy?: boolean;
+}) {
+  const [color, nor] = useTexture([
+    "/assets/metal/Metal009_1K-JPG_Color.jpg",
+    "/assets/metal/Metal009_1K-JPG_NormalGL.jpg",
+  ]);
+  useMemo(() => {
+    configure(color, [0.7, 0.7], "srgb");
+    configure(nor, [0.7, 0.7]);
+  }, [color, nor]);
+  return (
+    <meshPhysicalMaterial
+      map={color}
+      color={tint}
+      normalMap={nor}
+      normalScale={new THREE.Vector2(0.28, 0.28)}
+      roughness={glossy ? 0.5 : 0.58}
+      metalness={0.2}
+      clearcoat={glossy ? 0.25 : 0.16}
+      clearcoatRoughness={0.55}
+      envMapIntensity={0.1}
+    />
+  );
+}
+
 /** Real paper — loose sheets, folder tint, post-its. */
 export function PaperMaterial({
   tint = "#efe6d2",

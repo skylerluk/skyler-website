@@ -13,6 +13,8 @@ import {
   Books, Candle, DeskMat, DeskObject3D, DeskSlab, EthosCard, Folder, Macbook, Notebook, Papers, Pens,
   type SceneFocus,
 } from "./objects";
+import { SocialButton3D } from "./socials";
+import { githubMarkSvg, linkedinMarkSvg } from "./decals";
 
 // NOTE: the @react-three/postprocessing EffectComposer was removed. On some
 // GPUs (reproduced on Apple M-series via ANGLE Metal) routing the scene through
@@ -258,6 +260,33 @@ export function Desk3DScene({
       <group position={[-1.05, 0, -1.4]} rotation={[0, 0.16, 0]}><EthosCard /></group>
       {/* books — fully off the mat, square, on the walnut to its left */}
       <group position={[-2.18, 0, -0.1]} rotation={[0, 0.1, 0]}><Books /></group>
+
+      {/* social buttons — small matte machined objects on the walnut past the
+          mat's top-right corner (off the mat), angled a touch toward the camera
+          so the candle highlight grazes the bevels */}
+      {lit && (
+        <>
+          <SocialButton3D
+            href="https://github.com/skylerluk"
+            label="GitHub"
+            bodyTint="#0e0e0f"
+            glyphSvg={githubMarkSvg}
+            reduced={reduced}
+            position={[1.98, 0, -0.62]}
+            rotation={[0, -0.52, 0]}
+          />
+          <SocialButton3D
+            href="https://www.linkedin.com/in/skylerluk/"
+            label="LinkedIn"
+            bodyTint="#0a4f9c"
+            glyphSvg={linkedinMarkSvg}
+            glossy
+            reduced={reduced}
+            position={[2.32, 0, -0.36]}
+            rotation={[0, -0.52, 0]}
+          />
+        </>
+      )}
 
       {!flags.nocs && (
         <ContactShadows position={[0, 0.002, 0]} opacity={0.72} scale={7} blur={1.9} far={1.1} resolution={1024} color="#120a04" />
